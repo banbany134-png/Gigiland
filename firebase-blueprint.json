@@ -1,0 +1,60 @@
+{
+  "entities": {
+    "LokasiStan": {
+      "title": "LokasiStan",
+      "description": "Daftar stan pemeriksaan kesehatan gigi beserta koordinat geografisnya.",
+      "type": "object",
+      "properties": {
+        "nama_stan": {
+          "type": "string",
+          "description": "Nama unik stan pemeriksaan gigi."
+        },
+        "latitude": {
+          "type": "number",
+          "description": "Koordinat lintang / latitude lokasi stan."
+        },
+        "longitude": {
+          "type": "number",
+          "description": "Koordinat bujur / longitude lokasi stan."
+        }
+      },
+      "required": ["nama_stan", "latitude", "longitude"]
+    },
+    "Respondent": {
+      "title": "Respondent",
+      "description": "Data responden pemeriksaan klinis kesehatan gigi.",
+      "type": "object",
+      "properties": {
+        "nama": {
+          "type": "string"
+        },
+        "umur": {
+          "type": "number"
+        },
+        "jenisKelamin": {
+          "type": "string"
+        },
+        "lokasi_stan": {
+          "type": "string"
+        },
+        "latitude": {
+          "type": "number"
+        },
+        "longitude": {
+          "type": "number"
+        }
+      },
+      "required": ["nama", "umur", "jenisKelamin", "lokasi_stan"]
+    }
+  },
+  "firestore": {
+    "/lokasi_stan/{id}": {
+      "schema": "LokasiStan",
+      "description": "Koleksi daftar stan pemeriksaan kesehatan gigi."
+    },
+    "/sessions/{sessionId}/respondents/{respondentId}": {
+      "schema": "Respondent",
+      "description": "Subkoleksi responden dalam satu sesi pemeriksaan."
+    }
+  }
+}
