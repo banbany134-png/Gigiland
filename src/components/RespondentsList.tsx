@@ -28,13 +28,14 @@ export default function RespondentsList({
 
   // Handle Filtering
   const filtered = respondents.filter(r => {
-    const matchesSearch = r.nama.toLowerCase().includes(searchTerm.toLowerCase());
+    if (!r) return false;
+    const matchesSearch = (r.nama || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesGender = genderFilter === 'all' || r.jenisKelamin === genderFilter;
     const matchesAgeGroup = ageGroupFilter === 'all' || r.kelompokUmur === ageGroupFilter;
     
     let matchesReferral = true;
-    if (referralFilter === 'rujuk') matchesReferral = r.tindakLanjut.perluDirujuk;
-    else if (referralFilter === 'tidak') matchesReferral = !r.tindakLanjut.perluDirujuk;
+    if (referralFilter === 'rujuk') matchesReferral = !!r.tindakLanjut?.perluDirujuk;
+    else if (referralFilter === 'tidak') matchesReferral = !r.tindakLanjut?.perluDirujuk;
     
     return matchesSearch && matchesGender && matchesAgeGroup && matchesReferral;
   });
@@ -81,7 +82,14 @@ export default function RespondentsList({
 
         <div className="flex flex-wrap items-center gap-2">
           <button
-            onClick={() => window.print()}
+            onClick={() => {
+              try {
+                window.focus();
+                setTimeout(() => window.print(), 100);
+              } catch (e) {
+                window.print();
+              }
+            }}
             className="flex items-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs rounded-xl shadow-xs transition-all cursor-pointer hover:scale-105"
             title="Print Preview / Cetak Laporan Responden"
             id="btn-print-preview-respondents"

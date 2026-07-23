@@ -1302,7 +1302,7 @@ export default function DentalForm({
         </div>
 
         {/* Kolom 2 & 3 (Main): Odontogram & Summary Cards */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-6 min-w-0 w-full">
           {/* Visual Odontogram */}
           <Odontogram teethStatus={teethStatus} onChange={handleToothChange} />
 

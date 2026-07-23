@@ -143,43 +143,43 @@ export function calculateSurveyStats(respondents: RespondentData[]): SurveyStats
     }
 
     // Gigi Sulung sums
-    gsSehatSum += r.gigiSulung.sehat || 0;
-    gsKariesSum += r.gigiSulung.karies || 0;
-    gsDicabutKariesSum += r.gigiSulung.dicabutKaries || 0;
-    gsTumpatanKariesSum += r.gigiSulung.tumpatanKaries || 0;
-    gsTumpatanTanpaKariesSum += r.gigiSulung.tumpatanTanpaKaries || 0;
-    gsDicabutSebabLainSum += r.gigiSulung.dicabutSebabLain || 0;
-    gsFissureSum += r.gigiSulung.fissureSealant || 0;
-    gsProtesaSum += r.gigiSulung.protesaCekat || 0;
-    gsTidakTumbuhSum += r.gigiSulung.tidakTumbuh || 0;
-    gsLainSum += r.gigiSulung.lainLain || 0;
+    gsSehatSum += r.gigiSulung?.sehat || 0;
+    gsKariesSum += r.gigiSulung?.karies || 0;
+    gsDicabutKariesSum += r.gigiSulung?.dicabutKaries || 0;
+    gsTumpatanKariesSum += r.gigiSulung?.tumpatanKaries || 0;
+    gsTumpatanTanpaKariesSum += r.gigiSulung?.tumpatanTanpaKaries || 0;
+    gsDicabutSebabLainSum += r.gigiSulung?.dicabutSebabLain || 0;
+    gsFissureSum += r.gigiSulung?.fissureSealant || 0;
+    gsProtesaSum += r.gigiSulung?.protesaCekat || 0;
+    gsTidakTumbuhSum += r.gigiSulung?.tidakTumbuh || 0;
+    gsLainSum += r.gigiSulung?.lainLain || 0;
 
     // Gigi Tetap sums
-    gtSehatSum += r.gigiTetap.sehat || 0;
-    gtKariesSum += r.gigiTetap.karies || 0;
-    gtDicabutKariesSum += r.gigiTetap.dicabutKaries || 0;
-    gtTumpatanKariesSum += r.gigiTetap.tumpatanKaries || 0;
-    gtTumpatanTanpaKariesSum += r.gigiTetap.tumpatanTanpaKaries || 0;
-    gtDicabutSebabLainSum += r.gigiTetap.dicabutSebabLain || 0;
-    gtFissureSum += r.gigiTetap.fissureSealant || 0;
-    gtProtesaSum += r.gigiTetap.protesaCekat || 0;
-    gtTidakTumbuhSum += r.gigiTetap.tidakTumbuh || 0;
-    gtLainSum += r.gigiTetap.lainLain || 0;
+    gtSehatSum += r.gigiTetap?.sehat || 0;
+    gtKariesSum += r.gigiTetap?.karies || 0;
+    gtDicabutKariesSum += r.gigiTetap?.dicabutKaries || 0;
+    gtTumpatanKariesSum += r.gigiTetap?.tumpatanKaries || 0;
+    gtTumpatanTanpaKariesSum += r.gigiTetap?.tumpatanTanpaKaries || 0;
+    gtDicabutSebabLainSum += r.gigiTetap?.dicabutSebabLain || 0;
+    gtFissureSum += r.gigiTetap?.fissureSealant || 0;
+    gtProtesaSum += r.gigiTetap?.protesaCekat || 0;
+    gtTidakTumbuhSum += r.gigiTetap?.tidakTumbuh || 0;
+    gtLainSum += r.gigiTetap?.lainLain || 0;
 
     // Mukosa
-    if (r.mukosa.gusiBerdarah) gusiBerdarahCount++;
-    if (r.mukosa.lesiMukosaOral) lesiMukosaCount++;
+    if (r.mukosa?.gusiBerdarah) gusiBerdarahCount++;
+    if (r.mukosa?.lesiMukosaOral) lesiMukosaCount++;
 
     // RTL
-    if (r.tindakLanjut.perluPerawatanSegera) rwtSegeraCount++;
-    if (r.tindakLanjut.perluPerawatanTidakSegera) rwtTidakSegeraCount++;
-    if (r.tindakLanjut.perluDirujuk) rwtRujukCount++;
+    if (r.tindakLanjut?.perluPerawatanSegera) rwtSegeraCount++;
+    if (r.tindakLanjut?.perluPerawatanTidakSegera) rwtTidakSegeraCount++;
+    if (r.tindakLanjut?.perluDirujuk) rwtRujukCount++;
     
-    if (r.tindakLanjut.dirujukKe === 'puskesmas') rujPuskesmasCount++;
-    else if (r.tindakLanjut.dirujukKe === 'rs_umum') rujRSUmumCount++;
-    else if (r.tindakLanjut.dirujukKe === 'rsgm_rskgm') rujRSGMCount++;
-    else if (r.tindakLanjut.dirujukKe === 'klinik_pratama') rujPratamaCount++;
-    else if (r.tindakLanjut.dirujukKe === 'klinik_utama') rujUtamaCount++;
+    if (r.tindakLanjut?.dirujukKe === 'puskesmas') rujPuskesmasCount++;
+    else if (r.tindakLanjut?.dirujukKe === 'rs_umum') rujRSUmumCount++;
+    else if (r.tindakLanjut?.dirujukKe === 'rsgm_rskgm') rujRSGMCount++;
+    else if (r.tindakLanjut?.dirujukKe === 'klinik_pratama') rujPratamaCount++;
+    else if (r.tindakLanjut?.dirujukKe === 'klinik_utama') rujUtamaCount++;
   });
 
   // Calculate Averages for Gigi Sulung

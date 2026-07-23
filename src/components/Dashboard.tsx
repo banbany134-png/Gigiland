@@ -61,8 +61,9 @@ export default function Dashboard({ respondents }: DashboardProps) {
   // --- FILTERED DATA LOGIC ---
   const filteredRespondents = useMemo(() => {
     return respondents.filter(r => {
+      if (!r) return false;
       // 1. Text Search by Name
-      if (searchQuery && !r.nama.toLowerCase().includes(searchQuery.toLowerCase())) {
+      if (searchQuery && !(r.nama || '').toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
       // 2. Gender Filter
@@ -82,19 +83,19 @@ export default function Dashboard({ respondents }: DashboardProps) {
         return false;
       }
       // 6. Referral Filter
-      if (referralFilter === 'rujuk' && !r.tindakLanjut.perluDirujuk) {
+      if (referralFilter === 'rujuk' && !r.tindakLanjut?.perluDirujuk) {
         return false;
       }
-      if (referralFilter === 'tidak_rujuk' && r.tindakLanjut.perluDirujuk) {
+      if (referralFilter === 'tidak_rujuk' && r.tindakLanjut?.perluDirujuk) {
         return false;
       }
       // 7. Severity Filter (Active Caries check)
       if (severityFilter === 'karies_aktif') {
-        const hasKaries = (r.gigiSulung.karies > 0) || (r.gigiTetap.karies > 0);
+        const hasKaries = ((r.gigiSulung?.karies || 0) > 0) || ((r.gigiTetap?.karies || 0) > 0);
         if (!hasKaries) return false;
       }
       if (severityFilter === 'sehat') {
-        const isPerfectlySehat = (r.gigiSulung.karies === 0) && (r.gigiTetap.karies === 0) && (r.gigiSulung.dicabutKaries === 0) && (r.gigiTetap.dicabutKaries === 0);
+        const isPerfectlySehat = ((r.gigiSulung?.karies || 0) === 0) && ((r.gigiTetap?.karies || 0) === 0) && ((r.gigiSulung?.dicabutKaries || 0) === 0) && ((r.gigiTetap?.dicabutKaries || 0) === 0);
         if (!isPerfectlySehat) return false;
       }
 
@@ -334,10 +335,10 @@ export default function Dashboard({ respondents }: DashboardProps) {
       <DynamicGreeting />
 
       {/* --- SIDE LAYOUT CONTAINER (LEFT SIDEBAR & RIGHT WORKSPACE) --- */}
-      <div className="flex flex-col lg:flex-row gap-6 items-start">
+      <div className="flex flex-col xl:flex-row gap-6 items-start w-full min-w-0">
 
         {/* --- LEFT SIDEBAR PANEL (NAVIGATION & FILTERS) --- */}
-        <aside className="w-full lg:w-80 shrink-0 space-y-4 lg:sticky lg:top-4">
+        <aside className="w-full xl:w-80 shrink-0 space-y-4 xl:sticky xl:top-20 max-h-[calc(100vh-6rem)] overflow-y-auto no-scrollbar z-20">
           
           <div className="glass-panel p-5 rounded-3xl border border-white/50 shadow-lg space-y-5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl">
             
@@ -574,10 +575,10 @@ export default function Dashboard({ respondents }: DashboardProps) {
         </aside>
 
         {/* --- RIGHT MAIN WORKSPACE CONTENT --- */}
-        <div className="flex-1 min-w-0 space-y-6">
+        <div className="flex-1 min-w-0 w-full space-y-6">
 
           {/* KPI STATS METRIC GRID */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" id="filtered-kpi-grid">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4" id="filtered-kpi-grid">
         
         {/* KPI 1: Active Respondents */}
         <motion.div 
@@ -585,15 +586,15 @@ export default function Dashboard({ respondents }: DashboardProps) {
           className="glass-panel p-5 rounded-3xl shadow-md border border-white/40 flex flex-col justify-between"
         >
           <div className="flex justify-between items-start">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Responden Tersaring</span>
-            <span className="p-1.5 bg-indigo-50 text-indigo-600 rounded-xl"><Users className="w-4 h-4" /></span>
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Responden Tersaring</span>
+            <span className="p-1.5 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-sky-400 rounded-xl"><Users className="w-4 h-4" /></span>
           </div>
           <div className="mt-4">
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-black text-slate-900 font-mono tracking-tight">{filteredRespondents.length}</span>
-              <span className="text-[10px] font-extrabold text-slate-400 font-mono">/ {respondents.length}</span>
+              <span className="text-3xl font-black text-slate-900 dark:text-sky-400 font-mono tracking-tight">{filteredRespondents.length}</span>
+              <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-400 font-mono">/ {respondents.length}</span>
             </div>
-            <p className="text-[10px] text-slate-500 mt-1 font-bold">
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-bold">
               {((filteredRespondents.length / respondents.length) * 100).toFixed(0)}% dari seluruh data sesi
             </p>
           </div>
@@ -605,16 +606,16 @@ export default function Dashboard({ respondents }: DashboardProps) {
           className="glass-panel p-5 rounded-3xl shadow-md border border-white/40 flex flex-col justify-between"
         >
           <div className="flex justify-between items-start">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Rata-Rata def-t (Sulung)</span>
-            <span className="p-1.5 bg-emerald-50 text-emerald-600 rounded-xl"><CheckCircle className="w-4 h-4" /></span>
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Rata-Rata def-t (Sulung)</span>
+            <span className="p-1.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-xl"><CheckCircle className="w-4 h-4" /></span>
           </div>
           <div className="mt-4">
             <div className="flex items-baseline gap-1">
-              <span className="text-3xl font-black text-emerald-600 font-mono tracking-tight">
+              <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400 font-mono tracking-tight">
                 {stats.indexAvg.deft.toFixed(2)}
               </span>
             </div>
-            <div className="flex gap-2 text-[10px] text-emerald-700/85 font-mono font-bold mt-1.5 bg-emerald-500/5 px-2 py-0.5 rounded-lg border border-emerald-500/10 w-fit">
+            <div className="flex gap-2 text-[10px] text-emerald-700/85 dark:text-emerald-300 font-mono font-bold mt-1.5 bg-emerald-500/5 dark:bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/10 dark:border-emerald-500/20 w-fit">
               <span>d: {stats.indexAvg.d.toFixed(1)}</span>
               <span>e: {stats.indexAvg.e.toFixed(1)}</span>
               <span>f: {stats.indexAvg.f.toFixed(1)}</span>
@@ -628,16 +629,16 @@ export default function Dashboard({ respondents }: DashboardProps) {
           className="glass-panel p-5 rounded-3xl shadow-md border border-white/40 flex flex-col justify-between"
         >
           <div className="flex justify-between items-start">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Rata-Rata DMF-T (Tetap)</span>
-            <span className="p-1.5 bg-indigo-50 text-indigo-600 rounded-xl"><Award className="w-4 h-4" /></span>
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Rata-Rata DMF-T (Tetap)</span>
+            <span className="p-1.5 bg-indigo-50 dark:bg-pink-950/60 text-indigo-600 dark:text-pink-400 rounded-xl"><Award className="w-4 h-4" /></span>
           </div>
           <div className="mt-4">
             <div className="flex items-baseline gap-1">
-              <span className="text-3xl font-black text-indigo-600 font-mono tracking-tight">
+              <span className="text-3xl font-black text-indigo-600 dark:text-pink-400 font-mono tracking-tight">
                 {stats.indexAvg.dmft.toFixed(2)}
               </span>
             </div>
-            <div className="flex gap-2 text-[10px] text-indigo-700/85 font-mono font-bold mt-1.5 bg-indigo-500/5 px-2 py-0.5 rounded-lg border border-indigo-500/10 w-fit">
+            <div className="flex gap-2 text-[10px] text-indigo-700/85 dark:text-pink-300 font-mono font-bold mt-1.5 bg-indigo-500/5 dark:bg-pink-500/10 px-2 py-0.5 rounded-lg border border-indigo-500/10 dark:border-pink-500/20 w-fit">
               <span>D: {stats.indexAvg.D.toFixed(1)}</span>
               <span>M: {stats.indexAvg.M.toFixed(1)}</span>
               <span>F: {stats.indexAvg.F.toFixed(1)}</span>
@@ -651,15 +652,15 @@ export default function Dashboard({ respondents }: DashboardProps) {
           className="glass-panel p-5 rounded-3xl shadow-md border border-white/40 flex flex-col justify-between"
         >
           <div className="flex justify-between items-start">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tingkat Rujukan</span>
-            <span className="p-1.5 bg-rose-50 text-rose-500 rounded-xl"><AlertTriangle className="w-4 h-4" /></span>
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tingkat Rujukan</span>
+            <span className="p-1.5 bg-rose-50 dark:bg-rose-950/60 text-rose-500 dark:text-rose-400 rounded-xl"><AlertTriangle className="w-4 h-4" /></span>
           </div>
           <div className="mt-4 flex justify-between items-end">
             <div className="space-y-1">
-              <span className="text-3xl font-black text-rose-600 font-mono tracking-tight">
+              <span className="text-3xl font-black text-rose-600 dark:text-rose-400 font-mono tracking-tight">
                 {((stats.tindakLanjutPct.perluDirujuk || 0) * 100).toFixed(1)}%
               </span>
-              <p className="text-[10px] text-slate-500 font-bold">Butuh rujukan faskes</p>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">Butuh rujukan faskes</p>
             </div>
             
             {/* Minimalist circular graph */}
@@ -696,12 +697,13 @@ export default function Dashboard({ respondents }: DashboardProps) {
             >
               {/* Chart A: Grouped Bar Chart */}
               <div className="glass-panel rounded-3xl p-6 border border-white/40 shadow-md space-y-4 relative">
-                <div className="flex justify-between items-center border-b border-white/30 pb-3">
-                  <div className="space-y-0.5">
-                    <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-indigo-600" /> Bagan 1: Indeks Karies Berdasarkan Kelompok Umur
+                <div className="flex flex-wrap sm:flex-nowrap justify-between items-start sm:items-center gap-3 border-b border-white/30 pb-3">
+                  <div className="space-y-0.5 min-w-0 flex-1">
+                    <h3 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest flex items-center gap-1.5 flex-wrap">
+                      <span className="w-2 h-2 rounded-full bg-indigo-600 shrink-0" />
+                      <span className="truncate">Bagan 1: Indeks Karies Berdasarkan Kelompok Umur</span>
                     </h3>
-                    <p className="text-[10px] text-slate-500 font-semibold">Komparasi nilai rata-rata def-t dan DMF-T.</p>
+                    <p className="text-[10px] text-slate-500 font-semibold truncate">Komparasi nilai rata-rata def-t dan DMF-T.</p>
                   </div>
                 </div>
 
@@ -784,8 +786,11 @@ export default function Dashboard({ respondents }: DashboardProps) {
                   {/* HTML Bar Tooltip */}
                   {hoveredBar && (
                     <div 
-                      className="absolute bg-slate-900/95 backdrop-blur-md text-white border border-slate-700 p-2.5 rounded-xl shadow-xl z-50 text-xs flex flex-col gap-1 w-44"
-                      style={{ left: hoveredBar.x + 110, top: hoveredBar.y - 120 }}
+                      className="fixed bg-slate-900/95 backdrop-blur-md text-white border border-slate-700 p-2.5 rounded-xl shadow-xl z-50 text-xs flex flex-col gap-1 w-44 pointer-events-none"
+                      style={{ 
+                        left: Math.min(hoveredBar.x + 100, (typeof window !== 'undefined' ? window.innerWidth : 1000) - 190), 
+                        top: Math.max(20, hoveredBar.y - 70) 
+                      }}
                     >
                       <span className="font-extrabold text-indigo-400 tracking-wide uppercase text-[9px]">Kelompok {hoveredBar.group} tahun</span>
                       <strong className="font-bold border-b border-slate-700 pb-1">{hoveredBar.type}</strong>
@@ -809,25 +814,26 @@ export default function Dashboard({ respondents }: DashboardProps) {
 
               {/* Chart B: Line Trend Chart */}
               <div className="glass-panel rounded-3xl p-6 border border-white/40 shadow-md space-y-4 relative">
-                <div className="flex justify-between items-center border-b border-white/30 pb-3">
-                  <div className="space-y-0.5">
-                    <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-emerald-600" /> Bagan 2: Analisis Tren Multi-Metrik
+                <div className="flex flex-wrap sm:flex-nowrap justify-between items-start sm:items-center gap-3 border-b border-white/30 pb-3">
+                  <div className="space-y-0.5 min-w-0 flex-1">
+                    <h3 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest flex items-center gap-1.5 flex-wrap">
+                      <span className="w-2 h-2 rounded-full bg-emerald-600 shrink-0" />
+                      <span className="truncate">Bagan 2: Analisis Tren Multi-Metrik</span>
                     </h3>
-                    <p className="text-[10px] text-slate-500 font-semibold">Tinjau distribusi karies secara biologis atau kronologis.</p>
+                    <p className="text-[10px] text-slate-500 font-semibold truncate">Tinjau distribusi karies secara biologis atau kronologis.</p>
                   </div>
                   
                   {/* Mode switcher button */}
-                  <div className="flex gap-1 bg-white/60 p-0.5 border border-slate-200 rounded-xl text-[9px] font-black">
+                  <div className="flex gap-1 bg-white/70 dark:bg-slate-800/70 p-1 border border-slate-200 dark:border-slate-700 rounded-xl text-[9px] font-black shrink-0 shadow-2xs">
                     <button
                       onClick={() => setLineChartMode('age')}
-                      className={`px-2 py-1 rounded-lg transition-all cursor-pointer uppercase ${lineChartMode === 'age' ? 'bg-indigo-600 text-white' : 'text-slate-500'}`}
+                      className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer uppercase ${lineChartMode === 'age' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
                     >
                       Biol. Umur
                     </button>
                     <button
                       onClick={() => setLineChartMode('timeline')}
-                      className={`px-2 py-1 rounded-lg transition-all cursor-pointer uppercase ${lineChartMode === 'timeline' ? 'bg-indigo-600 text-white' : 'text-slate-500'}`}
+                      className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer uppercase ${lineChartMode === 'timeline' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
                     >
                       Kronol. Tanggal
                     </button>
@@ -862,7 +868,8 @@ export default function Dashboard({ respondents }: DashboardProps) {
                             const maxVal = 5;
 
                             const getCoords = (val: number, idx: number) => {
-                              const x = idx * (100 / (pointsCount - 1));
+                              const denom = Math.max(1, pointsCount - 1);
+                              const x = idx * (100 / denom);
                               const y = 100 - (val / maxVal) * 100;
                               return { x: `${x}%`, y: `${y}%` };
                             };
@@ -870,6 +877,7 @@ export default function Dashboard({ respondents }: DashboardProps) {
                             // Generate path string
                             let dmftPath = '';
                             let deftPath = '';
+                            const denom = Math.max(1, pointsCount - 1);
                             lineChartData.forEach((d, idx) => {
                               const coordsDmft = getCoords(d.dmft, idx);
                               const coordsDeft = getCoords(d.deft, idx);
@@ -877,7 +885,7 @@ export default function Dashboard({ respondents }: DashboardProps) {
                                 dmftPath = `M 0,${coordsDmft.y}`;
                                 deftPath = `M 0,${coordsDeft.y}`;
                               } else {
-                                const currentX = (idx / (pointsCount - 1)) * 100;
+                                const currentX = (idx / denom) * 100;
                                 dmftPath += ` L ${currentX}%,${coordsDmft.y}`;
                                 deftPath += ` L ${currentX}%,${coordsDeft.y}`;
                               }
@@ -993,8 +1001,11 @@ export default function Dashboard({ respondents }: DashboardProps) {
                   {/* HTML Line Tooltip */}
                   {hoveredLinePoint && (
                     <div 
-                      className="absolute bg-slate-900/95 backdrop-blur-md text-white border border-slate-700 p-2.5 rounded-xl shadow-xl z-50 text-xs flex flex-col gap-1 w-44"
-                      style={{ left: hoveredLinePoint.x + 110, top: hoveredLinePoint.y - 120 }}
+                      className="fixed bg-slate-900/95 backdrop-blur-md text-white border border-slate-700 p-2.5 rounded-xl shadow-xl z-50 text-xs flex flex-col gap-1 w-44 pointer-events-none"
+                      style={{ 
+                        left: Math.min(hoveredLinePoint.x + 100, (typeof window !== 'undefined' ? window.innerWidth : 1000) - 190), 
+                        top: Math.max(20, hoveredLinePoint.y - 70) 
+                      }}
                     >
                       <span className="font-extrabold text-indigo-400 tracking-wide uppercase text-[9px]">{hoveredLinePoint.xVal}</span>
                       <span className="text-slate-400 leading-none">Pemeriksaan: <strong className="text-white">{hoveredLinePoint.count} org</strong></span>
@@ -1068,31 +1079,31 @@ export default function Dashboard({ respondents }: DashboardProps) {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fadeIn">
                   {/* Heatmap Area */}
                   <div className="glass-panel rounded-3xl p-6 border border-white/40 shadow-md space-y-4 lg:col-span-2">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/30 pb-3 gap-3">
-                  <div className="space-y-0.5">
-                    <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-1.5">
-                      🦷 Peta Kepadatan Masalah Gigi (Heatmap Odontogram)
+                <div className="flex flex-wrap sm:flex-nowrap justify-between items-start sm:items-center gap-3 border-b border-white/30 pb-3">
+                  <div className="space-y-0.5 min-w-0 flex-1">
+                    <h3 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest flex items-center gap-1.5 flex-wrap">
+                      <span>🦷 Peta Kepadatan Masalah Gigi (Heatmap Odontogram)</span>
                     </h3>
-                    <p className="text-[10px] text-slate-500 font-semibold">Tinjau peta oklusi gigi berlubang, rusak, atau ditambal.</p>
+                    <p className="text-[10px] text-slate-500 font-semibold truncate">Tinjau peta oklusi gigi berlubang, rusak, atau ditambal.</p>
                   </div>
 
                   {/* Switch metric */}
-                  <div className="flex gap-1 bg-white/60 p-0.5 border border-slate-200 rounded-xl text-[9px] font-black w-fit self-end sm:self-auto">
+                  <div className="flex flex-wrap gap-1 bg-white/70 dark:bg-slate-800/70 p-1 border border-slate-200 dark:border-slate-700 rounded-xl text-[9px] font-black shrink-0 shadow-2xs">
                     <button
                       onClick={() => setHeatmapTargetMetric('decayed')}
-                      className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer uppercase ${heatmapTargetMetric === 'decayed' ? 'bg-indigo-600 text-white' : 'text-slate-500'}`}
+                      className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer uppercase ${heatmapTargetMetric === 'decayed' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
                     >
                       Lubang (d/D)
                     </button>
                     <button
                       onClick={() => setHeatmapTargetMetric('missing')}
-                      className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer uppercase ${heatmapTargetMetric === 'missing' ? 'bg-indigo-600 text-white' : 'text-slate-500'}`}
+                      className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer uppercase ${heatmapTargetMetric === 'missing' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
                     >
                       Hilang (e/M)
                     </button>
                     <button
                       onClick={() => setHeatmapTargetMetric('filled')}
-                      className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer uppercase ${heatmapTargetMetric === 'filled' ? 'bg-indigo-600 text-white' : 'text-slate-500'}`}
+                      className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer uppercase ${heatmapTargetMetric === 'filled' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
                     >
                       Tambalan (f/F)
                     </button>

@@ -63,9 +63,10 @@ export default function DescriptiveAnalysis({ respondents, allRespondentsCount }
   // Filtered respondents
   const filteredRespondents = useMemo(() => {
     return respondents.filter(r => {
+      if (!r) return false;
       // Search
       const matchesSearch = searchQuery === '' || 
-        r.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (r.nama || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         (r.nomorResponden && r.nomorResponden.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (r.pekerjaan && r.pekerjaan.toLowerCase().includes(searchQuery.toLowerCase()));
       
@@ -696,7 +697,7 @@ export default function DescriptiveAnalysis({ respondents, allRespondentsCount }
               </div>
 
               {/* Summary Stats Cards */}
-              <div className="grid grid-cols-4 gap-3 text-center text-xs font-semibold">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs font-semibold">
                 <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
                   <span className="text-[10px] text-slate-500 block font-bold uppercase">Total Responden</span>
                   <strong className="text-base text-indigo-900 font-mono font-black">{N} Orang</strong>

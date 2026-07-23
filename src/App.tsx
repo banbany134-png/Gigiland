@@ -29,7 +29,9 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Layers,
-  Check
+  Check,
+  Laptop,
+  Smartphone
 } from 'lucide-react';
 import { collection, doc, addDoc, onSnapshot, query, deleteDoc, getDocs, writeBatch, setDoc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
@@ -52,6 +54,7 @@ export default function App() {
   // Navigation layout states
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'laptop' | 'mobile'>('laptop');
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     return localStorage.getItem('theme') === 'dark';
   });
@@ -101,7 +104,7 @@ export default function App() {
       uid: 'sole-superadmin-uid',
       email: 'banbuny134@gmail.com',
       displayName: 'Super Admin (banbuny134@gmail.com)',
-      role: 'administrator' as const
+      role: 'administrator' as UserRole
     };
     localStorage.setItem('currentUserProfile', JSON.stringify(superAdminProfile));
     return superAdminProfile;
@@ -361,7 +364,15 @@ export default function App() {
   };
 
   const triggerPrintPreview = () => {
-    window.print();
+    try {
+      window.focus();
+      setTimeout(() => {
+        window.print();
+      }, 100);
+    } catch (err) {
+      console.error("Gagal memicu window.print:", err);
+      window.print();
+    }
   };
 
   // Login page fallback
@@ -380,14 +391,17 @@ export default function App() {
   }
 
   // Filter respondents for patients
-  const patientRecords = respondents.filter(r => 
-    r.nama.toLowerCase().trim() === currentUser.displayName.toLowerCase().trim() ||
-    r.nama.toLowerCase().trim().includes(currentUser.displayName.toLowerCase().trim()) ||
-    r.createdBy === currentUser.email
-  );
+  const patientRecords = respondents.filter(r => {
+    if (!r) return false;
+    const userDisplayName = (currentUser?.displayName || '').toLowerCase().trim();
+    const respondentName = (r.nama || '').toLowerCase().trim();
+    const matchesName = Boolean(userDisplayName && respondentName && (respondentName === userDisplayName || respondentName.includes(userDisplayName)));
+    const matchesEmail = Boolean(r.createdBy && currentUser?.email && r.createdBy === currentUser.email);
+    return matchesName || matchesEmail;
+  });
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'dark bg-[#0F172A]' : 'bg-[#FAFAFC]'} text-slate-800 dark:text-slate-100 font-sans transition-colors duration-300 flex flex-col`} id="app-root">
+    <div className={`min-h-screen ${darkMode ? 'dark bg-[#0F172A]' : 'bg-[#FAFAFC]'} text-slate-800 dark:text-slate-100 font-sans transition-colors duration-300 flex flex-col overflow-x-hidden w-full`} id="app-root">
       
       {/* ========================================== */}
       {/* TOP HEADER BAR                              */}
@@ -404,7 +418,7 @@ export default function App() {
               {/* Desktop Collapse Toggle / Mobile Drawer Toggle Button */}
               <button
                 onClick={() => {
-                  if (window.innerWidth < 1024) {
+                  if (viewMode === 'mobile' || (typeof window !== 'undefined' && window.innerWidth < 1024)) {
                     setMobileMenuOpen(!mobileMenuOpen);
                   } else {
                     setIsSidebarCollapsed(!isSidebarCollapsed);
@@ -414,11 +428,11 @@ export default function App() {
                 title="Buka/Tutup Sidebar Navigasi"
                 id="btn-sidebar-toggle"
               >
-                <Menu className="w-5 h-5 lg:hidden" />
+                <Menu className={`w-5 h-5 ${viewMode === 'mobile' ? 'block' : 'lg:hidden'}`} />
                 {isSidebarCollapsed ? (
-                  <PanelLeftOpen className="w-5 h-5 hidden lg:block" />
+                  <PanelLeftOpen className={`w-5 h-5 ${viewMode === 'mobile' ? 'hidden' : 'hidden lg:block'}`} />
                 ) : (
-                  <PanelLeftClose className="w-5 h-5 hidden lg:block" />
+                  <PanelLeftClose className={`w-5 h-5 ${viewMode === 'mobile' ? 'hidden' : 'hidden lg:block'}`} />
                 )}
               </button>
 
@@ -484,6 +498,36 @@ export default function App() {
                 </div>
               )}
 
+              {/* Mode Tampilan Toggle (Laptop vs HP) */}
+              <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xs">
+                <button
+                  onClick={() => setViewMode('laptop')}
+                  className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
+                    viewMode === 'laptop'
+                      ? 'bg-indigo-600 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                  title="Mode Laptop (Desktop View)"
+                  id="btn-mode-laptop"
+                >
+                  <Laptop className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Laptop</span>
+                </button>
+                <button
+                  onClick={() => setViewMode('mobile')}
+                  className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
+                    viewMode === 'mobile'
+                      ? 'bg-indigo-600 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                  title="Mode HP (Simulasi Frame HP)"
+                  id="btn-mode-hp"
+                >
+                  <Smartphone className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Mode HP</span>
+                </button>
+              </div>
+
               {/* Dark Mode Switch */}
               <button
                 onClick={() => setDarkMode(!darkMode)}
@@ -524,6 +568,228 @@ export default function App() {
           </div>
         </div>
       </header>
+
+      {/* ========================================== */}
+      {/* MOBILE SLIDE-OUT DRAWER MENU OVERLAY        */}
+      {/* ========================================== */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <div className="fixed inset-0 z-50 flex" id="mobile-menu-drawer">
+            {/* Backdrop overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileMenuOpen(false)}
+              className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm"
+            />
+
+            {/* Drawer content panel */}
+            <motion.div
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="relative w-80 max-w-[85vw] bg-white dark:bg-slate-900 h-full p-5 shadow-2xl flex flex-col justify-between overflow-y-auto z-50 border-r border-slate-200 dark:border-slate-800"
+            >
+              <div className="space-y-6">
+                {/* Drawer Header */}
+                <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 bg-indigo-600 text-white rounded-xl flex items-center justify-center shadow-md font-black">
+                      <FileSpreadsheet className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h2 className="text-base font-black text-slate-900 dark:text-slate-100 font-display">
+                        DentaSync Pro
+                      </h2>
+                      <p className="text-[10px] text-slate-500 font-bold">Menu Navigasi Mobile</p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="p-2 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
+                    title="Tutup Menu"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Active Session Info */}
+                <div className="p-3 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/30 rounded-2xl flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-indigo-600 shrink-0" />
+                  <div className="min-w-0">
+                    <span className="text-[10px] font-black text-indigo-700 dark:text-indigo-300 uppercase tracking-wider block">Sesi Aktif</span>
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{currentSessionName}</p>
+                  </div>
+                </div>
+
+                {/* Navigation Links */}
+                <nav className="space-y-1">
+                  <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2 block mb-2">
+                    Modul Utama
+                  </span>
+
+                  {/* Dashboard / Analisis */}
+                  <button
+                    onClick={() => { setActiveTab('dashboard'); setMobileMenuOpen(false); }}
+                    className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl font-black text-xs transition-all cursor-pointer ${
+                      activeTab === 'dashboard'
+                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <TrendingUp className="w-4.5 h-4.5 shrink-0" />
+                      <span>Analisis Real-Time</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 opacity-40" />
+                  </button>
+
+                  {/* Statistik */}
+                  <button
+                    onClick={() => { setActiveTab('stats'); setMobileMenuOpen(false); }}
+                    className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl font-black text-xs transition-all cursor-pointer ${
+                      activeTab === 'stats'
+                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <BarChart3 className="w-4.5 h-4.5 text-amber-500 shrink-0" />
+                      <span>Statistik Deskriptif</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 opacity-40" />
+                  </button>
+
+                  {/* Input Data */}
+                  {(currentUser.role === 'administrator' || currentUser.role === 'super_admin' || currentUser.role === 'admin_klinik' || currentUser.role === 'petugas_lapangan' || currentUser.role === 'operator') && (
+                    <button
+                      onClick={() => { setEditingRespondent(null); setActiveTab('input'); setMobileMenuOpen(false); }}
+                      className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl font-black text-xs transition-all cursor-pointer ${
+                        activeTab === 'input'
+                          ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                          : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <PlusCircle className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
+                        <span>Input Pemeriksaan</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4 opacity-40" />
+                    </button>
+                  )}
+
+                  {/* Data Responden */}
+                  <button
+                    onClick={() => { setActiveTab('data'); setMobileMenuOpen(false); }}
+                    className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl font-black text-xs transition-all cursor-pointer ${
+                      activeTab === 'data'
+                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <TableProperties className="w-4.5 h-4.5 shrink-0" />
+                      <span>Data Responden</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 opacity-40" />
+                  </button>
+
+                  {/* Sesi Cloud */}
+                  {(currentUser.role === 'administrator' || currentUser.role === 'super_admin' || currentUser.role === 'admin_klinik') && (
+                    <button
+                      onClick={() => { setActiveTab('cloud'); setMobileMenuOpen(false); }}
+                      className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl font-black text-xs transition-all cursor-pointer ${
+                        activeTab === 'cloud'
+                          ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                          : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <CloudSun className="w-4.5 h-4.5 text-sky-500 shrink-0" />
+                        <span>Sesi Klinik Cloud</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4 opacity-40" />
+                    </button>
+                  )}
+
+                  {/* Kelola User */}
+                  {(currentUser.role === 'administrator' || currentUser.role === 'super_admin') && (
+                    <button
+                      onClick={() => { setActiveTab('users'); setMobileMenuOpen(false); }}
+                      className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl font-black text-xs transition-all cursor-pointer ${
+                        activeTab === 'users'
+                          ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                          : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Users className="w-4.5 h-4.5 shrink-0" />
+                        <span>Manajemen User</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4 opacity-40" />
+                    </button>
+                  )}
+                </nav>
+
+                {/* Quick Actions (Print, PDF, Excel) */}
+                {currentUser.role !== 'pasien' && (
+                  <div className="space-y-2 border-t border-slate-200 dark:border-slate-800 pt-4">
+                    <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2 block">
+                      Ekspor & Cetak
+                    </span>
+                    <div className="grid grid-cols-3 gap-2">
+                      <button
+                        onClick={() => { triggerPrintPreview(); setMobileMenuOpen(false); }}
+                        className="flex flex-col items-center justify-center p-2.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 rounded-xl text-[11px] font-black border border-indigo-200 dark:border-indigo-800 cursor-pointer"
+                      >
+                        <Printer className="w-4 h-4 mb-1 text-indigo-600" />
+                        <span>Print</span>
+                      </button>
+                      <button
+                        onClick={() => { triggerPdfExport(); setMobileMenuOpen(false); }}
+                        className="flex flex-col items-center justify-center p-2.5 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 rounded-xl text-[11px] font-black border border-rose-200 dark:border-rose-800 cursor-pointer"
+                      >
+                        <FileDown className="w-4 h-4 mb-1 text-rose-600" />
+                        <span>PDF</span>
+                      </button>
+                      <button
+                        onClick={() => { triggerExcelExport(); setMobileMenuOpen(false); }}
+                        className="flex flex-col items-center justify-center p-2.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 rounded-xl text-[11px] font-black border border-emerald-200 dark:border-emerald-800 cursor-pointer"
+                      >
+                        <FileSpreadsheet className="w-4 h-4 mb-1 text-emerald-600" />
+                        <span>Excel</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* User Info & Logout at bottom of drawer */}
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3 mt-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 rounded-xl flex items-center justify-center font-black">
+                    <UserIcon className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-black text-slate-800 dark:text-slate-100 truncate">{currentUser.displayName}</p>
+                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{currentUser.role.replace('_', ' ')}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
+                  className="w-full flex items-center justify-center gap-2 p-2.5 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 rounded-xl text-xs font-black transition-colors cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Keluar Sesi</span>
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Main Container Area with Padding Top for Compact Fixed Header */}
       <div className="pt-14 sm:pt-16 min-h-screen">
@@ -677,14 +943,30 @@ export default function App() {
           </main>
         ) : (
           /* MODERN SAAS MEDICAL LAYOUT: PERSISTENT LEFT SIDEBAR + WORKSPACE AREA */
-          <div className="flex-1 max-w-[1600px] w-full mx-auto px-3 sm:px-6 py-4 flex gap-6 items-start pb-20 lg:pb-6">
+          <div className={
+            viewMode === 'mobile'
+              ? "flex-1 max-w-[430px] w-full mx-auto my-4 bg-white/90 dark:bg-slate-900/90 border-[8px] border-slate-800 dark:border-slate-800 rounded-[44px] shadow-2xl relative overflow-hidden flex flex-col p-3 pb-20 transition-all duration-300"
+              : "flex-1 max-w-[1700px] w-full mx-auto px-3 sm:px-6 py-4 flex flex-col lg:flex-row gap-6 items-start pb-6 min-w-0"
+          }>
             
+            {/* Smartphone Notch when in Mode HP */}
+            {viewMode === 'mobile' && (
+              <div className="w-28 h-4 bg-slate-800 rounded-b-xl flex items-center justify-center shrink-0 mx-auto mb-3">
+                <div className="w-10 h-1 bg-slate-700 rounded-full"></div>
+              </div>
+            )}
+
             {/* ------------------------------------------ */}
             {/* DESKTOP LEFT SIDEBAR NAVIGATION BAR         */}
             {/* ------------------------------------------ */}
-            <aside className={`hidden lg:flex flex-col shrink-0 sticky top-20 transition-all duration-300 ease-in-out z-30 ${
-              isSidebarCollapsed ? 'w-20' : 'w-64 xl:w-72'
-            }`}>
+            <aside 
+              id="desktop-sidebar"
+              className={`${
+                viewMode === 'mobile' ? 'hidden' : 'hidden lg:flex'
+              } flex-col shrink-0 sticky top-20 transition-all duration-300 ease-in-out z-30 ${
+                isSidebarCollapsed ? 'w-20' : 'w-64 xl:w-72'
+              }`}
+            >
               <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 rounded-3xl p-3.5 shadow-md space-y-5">
                 
                 {/* Sidebar Header & Collapse Toggle */}
@@ -878,6 +1160,70 @@ export default function App() {
                     </div>
                   )}
 
+                  {/* GROUP 4: EKSPOR & CETAK (DESKTOP SIDEBAR QUICK ACTIONS) */}
+                  {(currentUser.role as string) !== 'pasien' && (
+                    <div className="space-y-1.5 border-t border-slate-200/60 dark:border-slate-800 pt-3">
+                      {!isSidebarCollapsed && (
+                        <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2 block mb-1">
+                          Ekspor & Cetak
+                        </span>
+                      )}
+
+                      {isSidebarCollapsed ? (
+                        <div className="flex flex-col items-center gap-2 pt-1">
+                          <button
+                            onClick={triggerPrintPreview}
+                            className="p-2.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-xl hover:bg-indigo-100 transition-colors cursor-pointer"
+                            title="Print Preview (Dialog Cetak)"
+                          >
+                            <Printer className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={triggerPdfExport}
+                            className="p-2.5 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-xl hover:bg-rose-100 transition-colors cursor-pointer"
+                            title="Export PDF Laporan"
+                          >
+                            <FileDown className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={triggerExcelExport}
+                            className="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-xl hover:bg-emerald-100 transition-colors cursor-pointer"
+                            title="Export Excel Rekam Medis"
+                          >
+                            <FileSpreadsheet className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-3 gap-1.5 pt-1">
+                          <button
+                            onClick={triggerPrintPreview}
+                            className="flex flex-col items-center justify-center p-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 rounded-xl text-[10px] font-black border border-indigo-200/60 dark:border-indigo-800 hover:bg-indigo-100 transition-all cursor-pointer"
+                            title="Cetak Laporan Hasil Survey"
+                          >
+                            <Printer className="w-3.5 h-3.5 mb-0.5 text-indigo-600" />
+                            <span>Print</span>
+                          </button>
+                          <button
+                            onClick={triggerPdfExport}
+                            className="flex flex-col items-center justify-center p-2 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 rounded-xl text-[10px] font-black border border-rose-200/60 dark:border-rose-800 hover:bg-rose-100 transition-all cursor-pointer"
+                            title="Unduh File PDF Laporan"
+                          >
+                            <FileDown className="w-3.5 h-3.5 mb-0.5 text-rose-600" />
+                            <span>PDF</span>
+                          </button>
+                          <button
+                            onClick={triggerExcelExport}
+                            className="flex flex-col items-center justify-center p-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 rounded-xl text-[10px] font-black border border-emerald-200/60 dark:border-emerald-800 hover:bg-emerald-100 transition-all cursor-pointer"
+                            title="Unduh Spreadsheet Excel"
+                          >
+                            <FileSpreadsheet className="w-3.5 h-3.5 mb-0.5 text-emerald-600" />
+                            <span>Excel</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                 </nav>
 
                 {/* Active Session Info Widget in Sidebar */}
@@ -909,6 +1255,34 @@ export default function App() {
                 </div>
               ) : (
                 <div className="animate-fadeIn" id="tab-content-area">
+                  {/* Official Printable Header Kop Surat (Appears only on paper print) */}
+                  <div className="hidden print:block mb-6 p-4 border-b-2 border-slate-900 text-slate-900 font-sans">
+                    <div className="flex justify-between items-start pb-3 border-b border-slate-300">
+                      <div>
+                        <h1 className="text-xl font-black uppercase tracking-wider text-slate-900 font-display">
+                          KLINIK GIGI & MULUT DENTASYNC PRO
+                        </h1>
+                        <p className="text-xs font-bold text-slate-800 mt-1">
+                          Dokter Penanggung Jawab: drg. Banny (SIP/STR: 33.01.100.2.2026)
+                        </p>
+                        <p className="text-[11px] text-slate-600">
+                          Sesi Klinik Cloud: <strong className="text-slate-900">{currentSessionName}</strong>
+                        </p>
+                      </div>
+                      <div className="text-right text-[10px] text-slate-700 space-y-1">
+                        <span className="inline-block px-2 py-0.5 bg-slate-100 border border-slate-300 font-bold uppercase rounded">
+                          Laporan Resmi Rekam Medis
+                        </span>
+                        <p className="font-mono text-[11px]">
+                          {new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                        </p>
+                        <p className="font-bold text-indigo-900">
+                          Total Data: {respondents.length} Pasien Responden
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Tab Views */}
                   {activeTab === 'dashboard' && (
                     <Dashboard respondents={respondents} />
@@ -970,63 +1344,88 @@ export default function App() {
       {/* MOBILE BOTTOM NAVIGATION BAR (SMARTPHONE)   */}
       {/* ========================================== */}
       {currentUser.role !== 'pasien' && (
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800 px-2 py-1.5 flex justify-around items-center shadow-lg" id="mobile-bottom-nav">
+        <nav 
+          id="mobile-bottom-nav"
+          className={`fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800 px-3 py-2 justify-around items-center shadow-2xl transition-all ${
+            viewMode === 'mobile' ? 'flex' : 'hidden lg:hidden'
+          }`}
+        >
           
-          {/* Tab 1: Analisis */}
+          {/* Icon 1: Analisis Real-Time */}
           <button
             onClick={() => setActiveTab('dashboard')}
-            className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-black transition-colors cursor-pointer ${
-              activeTab === 'dashboard' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+            className={`p-2.5 rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer relative ${
+              activeTab === 'dashboard' 
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 scale-105' 
+                : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
             }`}
+            title="Analisis Real-Time (Dasbor Utama)"
+            aria-label="Analisis Real-Time"
           >
-            <TrendingUp className="w-5 h-5 mb-0.5" />
-            <span>Analisis</span>
+            <TrendingUp className="w-5 h-5" />
+            {activeTab === 'dashboard' && (
+              <span className="absolute -bottom-1 w-1.5 h-1.5 bg-white rounded-full"></span>
+            )}
           </button>
 
-          {/* Tab 2: Statistik */}
+          {/* Icon 2: Statistik & Analisis Deskriptif */}
           <button
             onClick={() => setActiveTab('stats')}
-            className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-black transition-colors cursor-pointer ${
-              activeTab === 'stats' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+            className={`p-2.5 rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer relative ${
+              activeTab === 'stats' 
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 scale-105' 
+                : 'text-amber-500 hover:text-amber-600 hover:bg-slate-100 dark:hover:bg-slate-800/60'
             }`}
+            title="Statistik & Analisis Deskriptif"
+            aria-label="Statistik & Analisis"
           >
-            <BarChart3 className="w-5 h-5 mb-0.5 text-amber-500" />
-            <span>Statistik</span>
+            <BarChart3 className="w-5 h-5" />
+            {activeTab === 'stats' && (
+              <span className="absolute -bottom-1 w-1.5 h-1.5 bg-white rounded-full"></span>
+            )}
           </button>
 
-          {/* Tab 3: Input */}
+          {/* Icon 3: Input Pemeriksaan Odontogram */}
           {(currentUser.role === 'administrator' || currentUser.role === 'super_admin' || currentUser.role === 'admin_klinik' || currentUser.role === 'petugas_lapangan' || currentUser.role === 'operator') && (
             <button
               onClick={() => { setEditingRespondent(null); setActiveTab('input'); }}
-              className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-black transition-colors cursor-pointer ${
-                activeTab === 'input' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+              className={`p-3 rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer relative -mt-3 shadow-lg ${
+                activeTab === 'input' 
+                  ? 'bg-emerald-600 text-white shadow-emerald-600/40 ring-4 ring-emerald-500/20 scale-110' 
+                  : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-600/30'
               }`}
+              title="Input Pemeriksaan Odontogram Baru"
+              aria-label="Input Pemeriksaan"
             >
-              <div className="p-1.5 bg-indigo-600 text-white rounded-xl shadow-xs -mt-3">
-                <PlusCircle className="w-5 h-5" />
-              </div>
-              <span className="mt-0.5">Input</span>
+              <PlusCircle className="w-5 h-5" />
             </button>
           )}
 
-          {/* Tab 4: Responden */}
+          {/* Icon 4: Data Responden */}
           <button
             onClick={() => setActiveTab('data')}
-            className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-black transition-colors cursor-pointer ${
-              activeTab === 'data' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+            className={`p-2.5 rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer relative ${
+              activeTab === 'data' 
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 scale-105' 
+                : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
             }`}
+            title="Data Responden & Rekam Medis"
+            aria-label="Data Responden"
           >
-            <TableProperties className="w-5 h-5 mb-0.5" />
-            <span>Responden</span>
+            <TableProperties className="w-5 h-5" />
+            {activeTab === 'data' && (
+              <span className="absolute -bottom-1 w-1.5 h-1.5 bg-white rounded-full"></span>
+            )}
           </button>
 
-          {/* Tab 5: Menu Drawer */}
+          {/* Icon 5: Menu Slide-out Drawer (☰) */}
           <button
             onClick={() => setMobileMenuOpen(true)}
-            className="flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-black text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
+            className="p-2.5 rounded-2xl flex flex-col items-center justify-center text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all cursor-pointer"
+            title="Buka Menu Drawer Lengkap (☰)"
+            aria-label="Menu Drawer"
           >
-            <Menu className="w-5 h-5 mb-0.5" />
-            <span>Menu</span>
+            <Menu className="w-5 h-5" />
           </button>
 
         </nav>

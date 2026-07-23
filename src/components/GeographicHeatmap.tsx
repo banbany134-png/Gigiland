@@ -191,7 +191,19 @@ export default function GeographicHeatmap({ respondents }: GeographicHeatmapProp
     tileLayerRef.current = tiles;
     mapRef.current = map;
 
+    // Handle container resize (e.g. fullscreen toggle, sidebar collapse)
+    const resizeObserver = new ResizeObserver(() => {
+      if (mapRef.current) {
+        mapRef.current.invalidateSize();
+      }
+    });
+
+    if (mapContainerRef.current) {
+      resizeObserver.observe(mapContainerRef.current);
+    }
+
     return () => {
+      resizeObserver.disconnect();
       map.remove();
       mapRef.current = null;
     };
