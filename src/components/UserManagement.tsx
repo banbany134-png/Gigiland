@@ -3,6 +3,7 @@ import { collection, onSnapshot, doc, setDoc, updateDoc, deleteDoc, writeBatch, 
 import { db } from '../lib/firebase';
 import { Users, Shield, UserCheck, UserX, KeyRound, AlertTriangle, Search, Info, Trash2, Sparkles, UserPlus, X, Check, Eye, EyeOff } from 'lucide-react';
 import { UserRole } from '../types';
+import ConfirmModal from './ConfirmModal';
 
 interface UserProfile {
   uid: string;
@@ -22,6 +23,12 @@ export default function UserManagement() {
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  // Modal confirm states
+  const [deleteUserTarget, setDeleteUserTarget] = useState<{ uid: string; name: string } | null>(null);
+  const [isDeletingUser, setIsDeletingUser] = useState(false);
+  const [showResetAllConfirm, setShowResetAllConfirm] = useState(false);
+  const [resetPassTarget, setResetPassTarget] = useState<{ user: UserProfile; newPass: string } | null>(null);
 
   // Modal for adding a new user
   const [showAddModal, setShowAddModal] = useState(false);
@@ -126,42 +133,44 @@ export default function UserManagement() {
     }
   };
 
-  const handleResetPassword = async (user: UserProfile) => {
+  const prepareResetPassword = (user: UserProfile) => {
     const newPass = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const confirmReset = window.confirm(`Apakah Anda yakin ingin menyetel ulang kata sandi pengguna "${user.displayName}"?\n\nKata sandi baru sementara: ${newPass}`);
-    if (confirmReset) {
-      try {
-        const userRef = doc(db, 'users', user.uid);
-        await updateDoc(userRef, { 
-          customPassword: newPass 
-        });
-        showToast(`Kata sandi "${user.displayName}" di-reset ke: ${newPass}`);
-      } catch (err) {
-        console.error("Gagal reset password:", err);
-        showToast("Gagal menyetel ulang kata sandi.", "error");
-      }
+    setResetPassTarget({ user, newPass });
+  };
+
+  const confirmResetPassword = async () => {
+    if (!resetPassTarget) return;
+    try {
+      const userRef = doc(db, 'users', resetPassTarget.user.uid);
+      await updateDoc(userRef, { 
+        customPassword: resetPassTarget.newPass 
+      });
+      showToast(`Kata sandi "${resetPassTarget.user.displayName}" di-reset ke: ${resetPassTarget.newPass}`);
+      setResetPassTarget(null);
+    } catch (err) {
+      console.error("Gagal reset password:", err);
+      showToast("Gagal menyetel ulang kata sandi.", "error");
     }
   };
 
-  const handleDeleteUser = async (uid: string, name: string) => {
-    if (confirm(`Apakah Anda yakin ingin menghapus data pengguna "${name}" dari sistem?`)) {
-      try {
-        const userRef = doc(db, 'users', uid);
-        await deleteDoc(userRef);
-        showToast(`Pengguna "${name}" berhasil dihapus.`);
-      } catch (err) {
-        console.error("Gagal menghapus pengguna:", err);
-        showToast("Gagal menghapus pengguna.", "error");
-      }
+  const handleConfirmDeleteUser = async () => {
+    if (!deleteUserTarget) return;
+    setIsDeletingUser(true);
+    try {
+      const userRef = doc(db, 'users', deleteUserTarget.uid);
+      await deleteDoc(userRef);
+      showToast(`Pengguna "${deleteUserTarget.name}" berhasil dihapus.`);
+      setDeleteUserTarget(null);
+    } catch (err) {
+      console.error("Gagal menghapus pengguna:", err);
+      showToast("Gagal menghapus pengguna.", "error");
+    } finally {
+      setIsDeletingUser(false);
     }
   };
 
   const handleCleanAndResetUsers = async () => {
-    const confirmReset = window.confirm(
-      "Apakah Anda yakin ingin membersihkan seluruh data sampah & merestart user default yang rapi?\n\nTindakan ini akan menghapus semua pengguna yang duplikat dan menyisakan daftar default resmi per masing-masing peran (Administrator, Peneliti, Petugas Lapangan)."
-    );
-    if (!confirmReset) return;
-
+    setShowResetAllConfirm(false);
     setLoading(true);
     try {
       // 1. Ambil semua dokumen user di Firestore
@@ -290,7 +299,7 @@ export default function UserManagement() {
 
           <button
             type="button"
-            onClick={handleCleanAndResetUsers}
+            onClick={() => setShowResetAllConfirm(true)}
             className="flex items-center gap-1.5 px-3 py-2 bg-pink-50 hover:bg-pink-100 border border-pink-200/50 text-pink-700 text-xs font-black rounded-xl cursor-pointer transition-all hover:scale-[1.03] shadow-xs"
             title="Bersihkan data sampah & rapikan daftar user default"
             id="btn-clean-reset-users"
@@ -381,14 +390,14 @@ export default function UserManagement() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full text-left text-xs border-collapse min-w-[700px]">
               <thead>
                 <tr className="bg-white/30 text-slate-600 border-b border-white/30 font-bold uppercase tracking-wider">
-                  <th className="py-4 px-4">Nama Pengguna</th>
-                  <th className="py-4 px-4">Email Terdaftar</th>
-                  <th className="py-4 px-4">Peran Hak Akses (Role)</th>
-                  <th className="py-4 px-4">Status</th>
-                  <th className="py-4 px-4 text-center">Aksi Manajemen Administrator</th>
+                  <th className="py-4 px-4 whitespace-nowrap">Nama Pengguna</th>
+                  <th className="py-4 px-4 whitespace-nowrap">Email Terdaftar</th>
+                  <th className="py-4 px-4 whitespace-nowrap">Peran Hak Akses (Role)</th>
+                  <th className="py-4 px-4 whitespace-nowrap">Status</th>
+                  <th className="py-4 px-4 text-center whitespace-nowrap">Aksi Manajemen Administrator</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/20 text-slate-700 font-medium">
@@ -449,7 +458,7 @@ export default function UserManagement() {
 
                           {/* Reset Password Button */}
                           <button
-                            onClick={() => handleResetPassword(user)}
+                            onClick={() => prepareResetPassword(user)}
                             className="p-1.5 bg-indigo-50 hover:bg-indigo-600 border border-indigo-200 text-indigo-600 hover:text-white rounded-xl text-xs font-bold flex items-center gap-1 transition-all hover:scale-105 cursor-pointer"
                             title="Setel Ulang Password"
                           >
@@ -459,7 +468,7 @@ export default function UserManagement() {
                           
                           {/* Delete User profile */}
                           <button
-                            onClick={() => handleDeleteUser(user.uid, user.displayName)}
+                            onClick={() => setDeleteUserTarget({ uid: user.uid, name: user.displayName })}
                             className="p-1.5 bg-rose-50 hover:bg-rose-600 border border-rose-200 text-rose-600 hover:text-white rounded-xl text-xs font-bold flex items-center gap-1 transition-all hover:scale-105 cursor-pointer"
                             title="Hapus Pengguna"
                           >
@@ -591,6 +600,54 @@ export default function UserManagement() {
           </p>
         </div>
       </div>
+
+      {/* Delete Single User Confirmation Modal */}
+      <ConfirmModal
+        isOpen={!!deleteUserTarget}
+        onClose={() => setDeleteUserTarget(null)}
+        onConfirm={handleConfirmDeleteUser}
+        isLoading={isDeletingUser}
+        title="Konfirmasi Hapus Pengguna"
+        message={
+          <>
+            Apakah Anda yakin ingin menghapus data pengguna <strong className="text-slate-900 dark:text-white font-extrabold">"{deleteUserTarget?.name}"</strong> dari sistem? Akses pengguna ini ke aplikasi akan dinonaktifkan secara permanen.
+          </>
+        }
+        confirmText="Iya, Hapus User"
+        cancelText="Tidak, Batal"
+        variant="danger"
+      />
+
+      {/* Reset All Users Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showResetAllConfirm}
+        onClose={() => setShowResetAllConfirm(false)}
+        onConfirm={handleCleanAndResetUsers}
+        title="Konfirmasi Reset Pengguna Default"
+        message="Apakah Anda yakin ingin membersihkan data sampah dan merestart daftar pengguna default? Tindakan ini akan menghapus semua pengguna duplikat dan menyisakan daftar default resmi per masing-masing peran."
+        confirmText="Iya, Reset User"
+        cancelText="Tidak, Batal"
+        variant="warning"
+      />
+
+      {/* Reset Single User Password Confirmation Modal */}
+      <ConfirmModal
+        isOpen={!!resetPassTarget}
+        onClose={() => setResetPassTarget(null)}
+        onConfirm={confirmResetPassword}
+        title="Konfirmasi Reset Kata Sandi"
+        message={
+          <>
+            Apakah Anda yakin ingin menyetel ulang kata sandi pengguna <strong className="text-slate-900 dark:text-white font-extrabold">"{resetPassTarget?.user.displayName}"</strong>?<br/>
+            <span className="inline-block mt-2 font-mono bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-lg border border-indigo-200">
+              Kata Sandi Baru Sementara: <strong>{resetPassTarget?.newPass}</strong>
+            </span>
+          </>
+        }
+        confirmText="Iya, Reset Pass"
+        cancelText="Tidak, Batal"
+        variant="info"
+      />
 
     </div>
   );

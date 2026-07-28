@@ -40,6 +40,7 @@ import {
 } from 'recharts';
 import { RespondentData } from '../types';
 import { exportToPdf, exportToExcel } from '../lib/surveyEngine';
+import BivariateAnalysis from './BivariateAnalysis';
 
 interface DescriptiveAnalysisProps {
   respondents: RespondentData[];
@@ -50,7 +51,7 @@ const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'
 
 export default function DescriptiveAnalysis({ respondents, allRespondentsCount }: DescriptiveAnalysisProps) {
   const [copiedNarrative, setCopiedNarrative] = useState(false);
-  const [activeTabSection, setActiveTabSection] = useState<'all' | 'graphs' | 'tendency' | 'frequency' | 'crosstab'>('all');
+  const [activeTabSection, setActiveTabSection] = useState<'all' | 'graphs' | 'tendency' | 'frequency' | 'crosstab' | 'bivariate'>('all');
   const [showPrintModal, setShowPrintModal] = useState(false);
 
   // Filter states
@@ -265,7 +266,7 @@ export default function DescriptiveAnalysis({ respondents, allRespondentsCount }
     <div className="space-y-6 my-2 font-sans">
       
       {/* SCREEN ACTION HEADER BAR */}
-      <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl p-5 rounded-3xl border border-white/60 dark:border-white/10 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
             <span className="p-2.5 bg-indigo-600 text-white rounded-2xl shadow-md shadow-indigo-600/20">
@@ -324,7 +325,7 @@ export default function DescriptiveAnalysis({ respondents, allRespondentsCount }
       </div>
 
       {/* INTERACTIVE FILTER BAR */}
-      <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl p-4 rounded-3xl border border-white/50 dark:border-white/10 shadow-2xs space-y-3">
+      <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">
             <Filter className="w-4 h-4 text-indigo-600" />
@@ -480,14 +481,27 @@ export default function DescriptiveAnalysis({ respondents, allRespondentsCount }
         >
           Tabulasi Silang
         </button>
+        <button
+          onClick={() => setActiveTabSection('bivariate')}
+          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTabSection === 'bivariate' ? 'bg-indigo-600 text-white shadow-2xs' : 'text-indigo-600 dark:text-indigo-400 font-extrabold hover:text-indigo-700'}`}
+        >
+          Uji Bivariat & Kuantitatif
+        </button>
       </div>
+
+      {/* BIVARIATE STATISTICAL ANALYSIS MODULE */}
+      {(activeTabSection === 'all' || activeTabSection === 'bivariate') && (
+        <div className="pt-2">
+          <BivariateAnalysis respondents={filteredRespondents} />
+        </div>
+      )}
 
       {/* RECHARTS VISUALIZATION GRAPHS MODULE */}
       {(activeTabSection === 'all' || activeTabSection === 'graphs') && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           
           {/* Chart 1: Komponen DMF-T */}
-          <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl p-5 rounded-3xl border border-white/50 dark:border-white/10 shadow-2xs space-y-3">
+          <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3">
             <h3 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider font-display">
               1. Rerata Komponen DMF-T (D, M, F)
             </h3>
@@ -509,7 +523,7 @@ export default function DescriptiveAnalysis({ respondents, allRespondentsCount }
           </div>
 
           {/* Chart 2: Kebersihan Mulut OHI-S */}
-          <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl p-5 rounded-3xl border border-white/50 dark:border-white/10 shadow-2xs space-y-3">
+          <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3">
             <h3 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider font-display">
               2. Kategori Kebersihan OHI-S
             </h3>
@@ -537,7 +551,7 @@ export default function DescriptiveAnalysis({ respondents, allRespondentsCount }
           </div>
 
           {/* Chart 3: Distribusi Umur */}
-          <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl p-5 rounded-3xl border border-white/50 dark:border-white/10 shadow-2xs space-y-3">
+          <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3">
             <h3 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider font-display">
               3. Distribusi Kelompok Umur
             </h3>
@@ -583,30 +597,30 @@ export default function DescriptiveAnalysis({ respondents, allRespondentsCount }
         </div>
       )}
 
-      {/* TABEL TENDENSI SENTRAL & DISPERSI */}
+      {/* TABEL 1: TENDENSI SENTRAL & DISPERSI */}
       {(activeTabSection === 'all' || activeTabSection === 'tendency') && (
-        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl p-6 rounded-3xl border border-white/50 dark:border-white/10 shadow-2xs space-y-4">
-          <div className="flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-indigo-600" />
               <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider font-display">
                 Tabel 1: Ukuran Tendensi Sentral & Dispersi Indeks Kesehatan Gigi
               </h3>
             </div>
-            <span className="text-[10px] text-slate-500 font-bold">Mean, Median, Standard Deviation (SD), Min, Max</span>
+            <span className="text-[10px] text-slate-500 font-bold">Mean, Median, Deviasi Standar (SD), Min, Max, Range</span>
           </div>
 
           <div className="overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-slate-800">
-            <table className="w-full text-left text-xs font-sans">
+            <table className="w-full text-left text-xs font-sans min-w-[720px]">
               <thead className="bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200/80 dark:border-slate-800">
                 <tr>
-                  <th className="p-3">Variabel / Indeks</th>
-                  <th className="p-3 text-center">Rerata (Mean)</th>
-                  <th className="p-3 text-center">Median</th>
-                  <th className="p-3 text-center">Deviasi Standar (SD)</th>
-                  <th className="p-3 text-center">Nilai Min</th>
-                  <th className="p-3 text-center">Nilai Max</th>
-                  <th className="p-3 text-center">Rentang (Range)</th>
+                  <th className="p-3.5 whitespace-nowrap">Variabel / Indeks</th>
+                  <th className="p-3.5 text-center whitespace-nowrap">Rerata (Mean)</th>
+                  <th className="p-3.5 text-center whitespace-nowrap">Median</th>
+                  <th className="p-3.5 text-center whitespace-nowrap">Deviasi Standar (SD)</th>
+                  <th className="p-3.5 text-center whitespace-nowrap">Nilai Min</th>
+                  <th className="p-3.5 text-center whitespace-nowrap">Nilai Max</th>
+                  <th className="p-3.5 text-center whitespace-nowrap">Rentang (Range)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 font-semibold text-slate-700 dark:text-slate-300">
@@ -617,24 +631,281 @@ export default function DescriptiveAnalysis({ respondents, allRespondentsCount }
                       key={idx} 
                       className={isMainHeader ? 'bg-indigo-50/40 dark:bg-indigo-950/20 font-extrabold text-slate-900 dark:text-slate-100' : 'hover:bg-slate-50/50 dark:hover:bg-slate-800/30'}
                     >
-                      <td className={`p-3 ${isMainHeader ? 'font-black text-indigo-950 dark:text-indigo-200' : 'text-slate-600 dark:text-slate-400'}`}>
+                      <td className={`p-3.5 whitespace-nowrap ${isMainHeader ? 'font-black text-indigo-950 dark:text-indigo-200' : 'text-slate-600 dark:text-slate-400 pl-6'}`}>
                         {s.name}
                       </td>
-                      <td className="p-3 text-center font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                      <td className="p-3.5 text-center font-mono font-bold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
                         {s.mean.toFixed(2)}
                       </td>
-                      <td className="p-3 text-center font-mono">{s.median.toFixed(2)}</td>
-                      <td className="p-3 text-center font-mono text-emerald-600 dark:text-emerald-400">
+                      <td className="p-3.5 text-center font-mono whitespace-nowrap">{s.median.toFixed(2)}</td>
+                      <td className="p-3.5 text-center font-mono text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
                         ± {s.sd.toFixed(2)}
                       </td>
-                      <td className="p-3 text-center font-mono">{s.min}</td>
-                      <td className="p-3 text-center font-mono">{s.max}</td>
-                      <td className="p-3 text-center font-mono text-slate-500">{s.max - s.min}</td>
+                      <td className="p-3.5 text-center font-mono whitespace-nowrap">{s.min}</td>
+                      <td className="p-3.5 text-center font-mono whitespace-nowrap">{s.max}</td>
+                      <td className="p-3.5 text-center font-mono text-slate-500 whitespace-nowrap">{s.max - s.min}</td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* TABEL 2: DISTRIBUSI FREKUENSI & PROPORSI */}
+      {(activeTabSection === 'all' || activeTabSection === 'frequency') && (
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-6">
+          <div className="flex items-center justify-between flex-wrap gap-2 border-b border-slate-200/60 dark:border-slate-800 pb-3">
+            <div className="flex items-center gap-2">
+              <TableIcon className="w-4 h-4 text-emerald-600" />
+              <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider font-display">
+                Tabel 2: Distribusi Frekuensi Demografi & Kategori Kebersihan Mulut (OHI-S)
+              </h3>
+            </div>
+            <span className="text-[10px] text-slate-500 font-bold">Total Sampel N = {N} Responden</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* Sub-tabel Jenis Kelamin */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                <span>A. Distribusi Jenis Kelamin</span>
+              </h4>
+              <div className="overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-slate-800">
+                <table className="w-full text-left text-xs font-sans">
+                  <thead className="bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 font-bold uppercase text-[10px]">
+                    <tr>
+                      <th className="p-3">Kategori</th>
+                      <th className="p-3 text-center">Frekuensi (N)</th>
+                      <th className="p-3 text-center">Persentase (%)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 font-semibold text-slate-700 dark:text-slate-300">
+                    {Object.entries(genderFreq).map(([k, v]) => (
+                      <tr key={k} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                        <td className="p-3 font-bold">{k}</td>
+                        <td className="p-3 text-center font-mono font-bold text-indigo-600">{v}</td>
+                        <td className="p-3 text-center font-mono text-emerald-600">{((v / N) * 100).toFixed(1)}%</td>
+                      </tr>
+                    ))}
+                    <tr className="bg-slate-100/50 dark:bg-slate-800/50 font-extrabold text-slate-900 dark:text-slate-100">
+                      <td className="p-3">Total</td>
+                      <td className="p-3 text-center font-mono">{N}</td>
+                      <td className="p-3 text-center font-mono">100.0%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Sub-tabel Kelompok Umur */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                <span>B. Distribusi Kelompok Umur</span>
+              </h4>
+              <div className="overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-slate-800">
+                <table className="w-full text-left text-xs font-sans">
+                  <thead className="bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 font-bold uppercase text-[10px]">
+                    <tr>
+                      <th className="p-3">Kelompok Umur</th>
+                      <th className="p-3 text-center">Frekuensi (N)</th>
+                      <th className="p-3 text-center">Persentase (%)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 font-semibold text-slate-700 dark:text-slate-300">
+                    {[
+                      { key: '5-10', label: '5 - 10 Tahun (Anak-anak)' },
+                      { key: '10-18', label: '10 - 18 Tahun (Remaja)' },
+                      { key: '18-60', label: '18 - 60 Tahun (Produktif)' },
+                      { key: '60+', label: '60+ Tahun (Lansia)' }
+                    ].map(({ key, label }) => {
+                      const count = ageGroupFreq[key] || 0;
+                      return (
+                        <tr key={key} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                          <td className="p-3 font-bold">{label}</td>
+                          <td className="p-3 text-center font-mono font-bold text-indigo-600">{count}</td>
+                          <td className="p-3 text-center font-mono text-emerald-600">{((count / N) * 100).toFixed(1)}%</td>
+                        </tr>
+                      );
+                    })}
+                    <tr className="bg-slate-100/50 dark:bg-slate-800/50 font-extrabold text-slate-900 dark:text-slate-100">
+                      <td className="p-3">Total</td>
+                      <td className="p-3 text-center font-mono">{N}</td>
+                      <td className="p-3 text-center font-mono">100.0%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Sub-tabel Kebersihan OHI-S */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                <span>C. Kategori Kebersihan Mulut (OHI-S)</span>
+              </h4>
+              <div className="overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-slate-800">
+                <table className="w-full text-left text-xs font-sans">
+                  <thead className="bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 font-bold uppercase text-[10px]">
+                    <tr>
+                      <th className="p-3">Kategori OHI-S</th>
+                      <th className="p-3 text-center">Frekuensi (N)</th>
+                      <th className="p-3 text-center">Persentase (%)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 font-semibold text-slate-700 dark:text-slate-300">
+                    {['Baik', 'Sedang', 'Buruk'].map(cat => {
+                      const count = ohisCatFreq[cat] || 0;
+                      return (
+                        <tr key={cat} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                          <td className="p-3 font-bold">Kebersihan {cat}</td>
+                          <td className="p-3 text-center font-mono font-bold text-indigo-600">{count}</td>
+                          <td className="p-3 text-center font-mono text-emerald-600">{((count / N) * 100).toFixed(1)}%</td>
+                        </tr>
+                      );
+                    })}
+                    <tr className="bg-slate-100/50 dark:bg-slate-800/50 font-extrabold text-slate-900 dark:text-slate-100">
+                      <td className="p-3">Total</td>
+                      <td className="p-3 text-center font-mono">{N}</td>
+                      <td className="p-3 text-center font-mono">100.0%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Sub-tabel Status Mukosa & Rujukan */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                <span>D. Status Mukosa & Kebutuhan Rujukan</span>
+              </h4>
+              <div className="overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-slate-800">
+                <table className="w-full text-left text-xs font-sans">
+                  <thead className="bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 font-bold uppercase text-[10px]">
+                    <tr>
+                      <th className="p-3">Kondisi / Indikator</th>
+                      <th className="p-3 text-center">Jumlah Pasien</th>
+                      <th className="p-3 text-center">Proporsi (%)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 font-semibold text-slate-700 dark:text-slate-300">
+                    <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                      <td className="p-3 font-bold text-rose-700 dark:text-rose-400">Gusi Berdarah (Gingivitis)</td>
+                      <td className="p-3 text-center font-mono font-bold">{gusiBerdarahCount}</td>
+                      <td className="p-3 text-center font-mono text-rose-600 font-bold">{((gusiBerdarahCount / N) * 100).toFixed(1)}%</td>
+                    </tr>
+                    <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                      <td className="p-3 font-bold text-amber-700 dark:text-amber-400">Lesi Mukosa Oral</td>
+                      <td className="p-3 text-center font-mono font-bold">{lesiMukosaCount}</td>
+                      <td className="p-3 text-center font-mono text-amber-600 font-bold">{((lesiMukosaCount / N) * 100).toFixed(1)}%</td>
+                    </tr>
+                    <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                      <td className="p-3 font-bold text-orange-700 dark:text-orange-400">Perlu Perawatan Segera</td>
+                      <td className="p-3 text-center font-mono font-bold">{perluSegeraCount}</td>
+                      <td className="p-3 text-center font-mono text-orange-600 font-bold">{((perluSegeraCount / N) * 100).toFixed(1)}%</td>
+                    </tr>
+                    <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                      <td className="p-3 font-bold text-indigo-700 dark:text-indigo-400">Direkomendasikan Rujukan RSU/Klinik</td>
+                      <td className="p-3 text-center font-mono font-bold">{perluRujukCount}</td>
+                      <td className="p-3 text-center font-mono text-indigo-600 font-bold">{((perluRujukCount / N) * 100).toFixed(1)}%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* TABEL 3: TABULASI SILANG (CROSSTABULATION) */}
+      {(activeTabSection === 'all' || activeTabSection === 'crosstab') && (
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-6">
+          <div className="flex items-center justify-between flex-wrap gap-2 border-b border-slate-200/60 dark:border-slate-800 pb-3">
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-purple-600" />
+              <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider font-display">
+                Tabel 3: Tabulasi Silang Demografi vs Indeks Karies DMF-T & Prevalensi
+              </h3>
+            </div>
+            <span className="text-[10px] text-slate-500 font-bold">Analisis Bivariat Lintas Sub-Kelompok</span>
+          </div>
+
+          <div className="space-y-6">
+            
+            {/* Crosstab Jenis Kelamin */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                A. Tabulasi Silang Jenis Kelamin vs Karies & DMF-T
+              </h4>
+              <div className="overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-slate-800">
+                <table className="w-full text-left text-xs font-sans min-w-[650px]">
+                  <thead className="bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 font-bold uppercase text-[10px] tracking-wider">
+                    <tr>
+                      <th className="p-3.5 whitespace-nowrap">Jenis Kelamin</th>
+                      <th className="p-3.5 text-center whitespace-nowrap">Responden (N)</th>
+                      <th className="p-3.5 text-center whitespace-nowrap">Proporsi (%)</th>
+                      <th className="p-3.5 text-center whitespace-nowrap">Rerata DMF-T (Mean ± SD)</th>
+                      <th className="p-3.5 text-center whitespace-nowrap">Prevalensi Karies (%)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 font-semibold text-slate-700 dark:text-slate-300">
+                    {crosstabGender.map((item) => (
+                      <tr key={item.groupName} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                        <td className="p-3.5 font-bold text-indigo-950 dark:text-indigo-200 whitespace-nowrap">{item.groupName}</td>
+                        <td className="p-3.5 text-center font-mono font-bold whitespace-nowrap">{item.n}</td>
+                        <td className="p-3.5 text-center font-mono whitespace-nowrap">{item.pct.toFixed(1)}%</td>
+                        <td className="p-3.5 text-center font-mono font-bold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
+                          {item.meanDMFT.toFixed(2)} ± {item.sdDMFT.toFixed(2)}
+                        </td>
+                        <td className="p-3.5 text-center font-mono font-bold text-rose-600 dark:text-rose-400 whitespace-nowrap">
+                          {item.prevalensiKariesPct.toFixed(1)}%
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Crosstab Kelompok Umur */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                B. Tabulasi Silang Kelompok Umur vs Karies & DMF-T
+              </h4>
+              <div className="overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-slate-800">
+                <table className="w-full text-left text-xs font-sans min-w-[650px]">
+                  <thead className="bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 font-bold uppercase text-[10px] tracking-wider">
+                    <tr>
+                      <th className="p-3.5 whitespace-nowrap">Kelompok Umur</th>
+                      <th className="p-3.5 text-center whitespace-nowrap">Responden (N)</th>
+                      <th className="p-3.5 text-center whitespace-nowrap">Proporsi (%)</th>
+                      <th className="p-3.5 text-center whitespace-nowrap">Rerata DMF-T (Mean ± SD)</th>
+                      <th className="p-3.5 text-center whitespace-nowrap">Prevalensi Karies (%)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 font-semibold text-slate-700 dark:text-slate-300">
+                    {crosstabAgeGroup.map((item) => (
+                      <tr key={item.groupName} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                        <td className="p-3.5 font-bold text-indigo-950 dark:text-indigo-200 whitespace-nowrap">
+                          Kelompok {item.groupName} Tahun
+                        </td>
+                        <td className="p-3.5 text-center font-mono font-bold whitespace-nowrap">{item.n}</td>
+                        <td className="p-3.5 text-center font-mono whitespace-nowrap">{item.pct.toFixed(1)}%</td>
+                        <td className="p-3.5 text-center font-mono font-bold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
+                          {item.meanDMFT.toFixed(2)} ± {item.sdDMFT.toFixed(2)}
+                        </td>
+                        <td className="p-3.5 text-center font-mono font-bold text-rose-600 dark:text-rose-400 whitespace-nowrap">
+                          {item.prevalensiKariesPct.toFixed(1)}%
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
           </div>
         </div>
       )}
@@ -722,35 +993,37 @@ export default function DescriptiveAnalysis({ respondents, allRespondentsCount }
                   I. Tabel Rincian Data Pasien & Diagnosis Klinis
                 </h3>
                 <div className="overflow-x-auto rounded-xl border border-slate-300">
-                  <table className="w-full text-left text-[11px] font-sans">
+                  <table className="w-full text-left text-[11px] font-sans min-w-[720px]">
                     <thead className="bg-slate-100 text-slate-900 font-bold uppercase text-[9px]">
                       <tr>
-                        <th className="p-2 border-b">No</th>
-                        <th className="p-2 border-b">No. Responden</th>
-                        <th className="p-2 border-b">Nama Responden</th>
-                        <th className="p-2 border-b text-center">Umur</th>
-                        <th className="p-2 border-b text-center">JK</th>
-                        <th className="p-2 border-b text-center">OHI-S</th>
-                        <th className="p-2 border-b text-center">DMF-T</th>
-                        <th className="p-2 border-b">Diagnosis Klinis</th>
-                        <th className="p-2 border-b">Tindakan / Rencana</th>
+                        <th className="p-2 border-b whitespace-nowrap">No</th>
+                        <th className="p-2 border-b whitespace-nowrap">No. Responden</th>
+                        <th className="p-2 border-b whitespace-nowrap">Nama Responden</th>
+                        <th className="p-2 border-b text-center whitespace-nowrap">Umur</th>
+                        <th className="p-2 border-b text-center whitespace-nowrap">JK</th>
+                        <th className="p-2 border-b text-center whitespace-nowrap">OHI-S</th>
+                        <th className="p-2 border-b text-center whitespace-nowrap">DMF-T</th>
+                        <th className="p-2 border-b whitespace-nowrap">Diagnosis Klinis</th>
+                        <th className="p-2 border-b whitespace-nowrap">Tindakan / Rencana</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200 text-slate-800 font-medium">
                       {filteredRespondents.map((r, idx) => (
                         <tr key={r.id || idx} className={r.isPriorityPatient ? 'bg-amber-50 font-bold text-amber-950' : 'hover:bg-slate-50'}>
-                          <td className="p-2 font-mono text-center">{idx + 1}</td>
-                          <td className="p-2 font-mono text-[10px]">{r.nomorResponden || `DSP-2026-${String(idx+1).padStart(3, '0')}`}</td>
-                          <td className="p-2 font-bold flex items-center gap-1">
-                            {r.isPriorityPatient && <Crown className="w-3 h-3 text-amber-600 shrink-0" />}
-                            <span>{r.nama}</span>
+                          <td className="p-2 font-mono text-center whitespace-nowrap">{idx + 1}</td>
+                          <td className="p-2 font-mono text-[10px] whitespace-nowrap">{r.nomorResponden || `DSP-2026-${String(idx+1).padStart(3, '0')}`}</td>
+                          <td className="p-2 font-bold whitespace-nowrap">
+                            <div className="flex items-center gap-1">
+                              {r.isPriorityPatient && <Crown className="w-3 h-3 text-amber-600 shrink-0" />}
+                              <span>{r.nama}</span>
+                            </div>
                           </td>
-                          <td className="p-2 text-center font-mono">{r.umur}th</td>
-                          <td className="p-2 text-center">{r.jenisKelamin === 'Laki-laki' ? 'L' : 'P'}</td>
-                          <td className="p-2 text-center font-mono font-bold text-emerald-700">{r.ohisScore ?? 0.8}</td>
-                          <td className="p-2 text-center font-mono font-bold text-indigo-700">{r.dmft || 0}</td>
-                          <td className="p-2 text-[10px]">{r.diagnosis || 'Gigi Sehat & Periodontal Normal'}</td>
-                          <td className="p-2 text-[10px]">{r.tindakan || 'Edukasi Sikat Gigi Periodik'}</td>
+                          <td className="p-2 text-center font-mono whitespace-nowrap">{r.umur}th</td>
+                          <td className="p-2 text-center whitespace-nowrap">{r.jenisKelamin === 'Laki-laki' ? 'L' : 'P'}</td>
+                          <td className="p-2 text-center font-mono font-bold text-emerald-700 whitespace-nowrap">{r.ohisScore ?? 0.8}</td>
+                          <td className="p-2 text-center font-mono font-bold text-indigo-700 whitespace-nowrap">{r.dmft || 0}</td>
+                          <td className="p-2 text-[10px] whitespace-nowrap">{r.diagnosis || 'Gigi Sehat & Periodontal Normal'}</td>
+                          <td className="p-2 text-[10px] whitespace-nowrap">{r.tindakan || 'Edukasi Sikat Gigi Periodik'}</td>
                         </tr>
                       ))}
                     </tbody>

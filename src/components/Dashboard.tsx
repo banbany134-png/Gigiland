@@ -334,256 +334,249 @@ export default function Dashboard({ respondents }: DashboardProps) {
       {/* Dynamic Time-based Greeting */}
       <DynamicGreeting />
 
-      {/* --- SIDE LAYOUT CONTAINER (LEFT SIDEBAR & RIGHT WORKSPACE) --- */}
-      <div className="flex flex-col xl:flex-row gap-6 items-start w-full min-w-0">
-
-        {/* --- LEFT SIDEBAR PANEL (NAVIGATION & FILTERS) --- */}
-        <aside className="w-full xl:w-80 shrink-0 space-y-4 xl:sticky xl:top-20 max-h-[calc(100vh-6rem)] overflow-y-auto no-scrollbar z-20">
+      {/* --- TOP SUB-TAB NAVIGATION & FILTER BAR --- */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-3.5 shadow-sm space-y-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           
-          <div className="glass-panel p-5 rounded-3xl border border-white/50 shadow-lg space-y-5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl">
-            
-            {/* Sidebar Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-200/60 dark:border-slate-800">
-              <div className="flex items-center gap-2.5">
-                <span className="p-2 bg-indigo-600 text-white rounded-xl shadow-md shadow-indigo-600/20">
-                  <LayoutDashboard className="w-4.5 h-4.5" />
-                </span>
-                <div>
-                  <h2 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider font-display">
-                    Panel Samping
-                  </h2>
-                  <p className="text-[10px] text-slate-500 font-bold">Menu & Filter Samping</p>
-                </div>
-              </div>
-              
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="p-1.5 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 text-indigo-700 dark:text-indigo-300 rounded-xl transition-all cursor-pointer text-xs border border-indigo-100 dark:border-indigo-900/50"
-                title={showFilters ? 'Sembunyikan Filter Samping' : 'Tampilkan Filter Samping'}
-              >
-                <Filter className="w-3.5 h-3.5" />
-              </button>
-            </div>
+          {/* Sub-Tab Module Switcher */}
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+            <button
+              onClick={() => setActiveSubTab('charts')}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
+                activeSubTab === 'charts'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+            >
+              <TrendingUp className="w-3.5 h-3.5" />
+              <span>Epidemiologi & Tren</span>
+            </button>
 
-            {/* 1. Sub-Tab Navigation Items */}
-            <div className="space-y-1">
-              <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block px-1 mb-1">
-                Modul Analisis & BI
-              </span>
-              
-              <button
-                onClick={() => setActiveSubTab('charts')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer ${activeSubTab === 'charts' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'}`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <TrendingUp className="w-4 h-4" />
-                  <span>Epidemiologi & Tren</span>
-                </div>
-                <ChevronRight className={`w-3.5 h-3.5 transition-transform ${activeSubTab === 'charts' ? 'translate-x-0.5' : 'opacity-40'}`} />
-              </button>
+            <button
+              onClick={() => setActiveSubTab('heatmap')}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
+                activeSubTab === 'heatmap'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+            >
+              <MapPin className="w-3.5 h-3.5" />
+              <span>Peta Panas Karies</span>
+            </button>
 
-              <button
-                onClick={() => setActiveSubTab('heatmap')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer ${activeSubTab === 'heatmap' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'}`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <MapPin className="w-4 h-4" />
-                  <span>Peta Panas Karies</span>
-                </div>
-                <ChevronRight className={`w-3.5 h-3.5 transition-transform ${activeSubTab === 'heatmap' ? 'translate-x-0.5' : 'opacity-40'}`} />
-              </button>
+            <button
+              onClick={() => setActiveSubTab('correlation')}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
+                activeSubTab === 'correlation'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+            >
+              <Activity className="w-3.5 h-3.5" />
+              <span>Korelasi Demografis</span>
+            </button>
 
-              <button
-                onClick={() => setActiveSubTab('correlation')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer ${activeSubTab === 'correlation' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'}`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Activity className="w-4 h-4" />
-                  <span>Korelasi Demografis</span>
-                </div>
-                <ChevronRight className={`w-3.5 h-3.5 transition-transform ${activeSubTab === 'correlation' ? 'translate-x-0.5' : 'opacity-40'}`} />
-              </button>
-
-              <button
-                onClick={() => setActiveSubTab('descriptive')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer ${activeSubTab === 'descriptive' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'}`}
-                id="subtab-descriptive"
-              >
-                <div className="flex items-center gap-2.5">
-                  <BarChart3 className="w-4 h-4" />
-                  <span>Deskriptif & Cetak</span>
-                </div>
-                <ChevronRight className={`w-3.5 h-3.5 transition-transform ${activeSubTab === 'descriptive' ? 'translate-x-0.5' : 'opacity-40'}`} />
-              </button>
-            </div>
-
-            {/* 2. Side Filter Section */}
-            <div className="border-t border-slate-200/60 dark:border-slate-800 pt-3 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
-                  Filter Samping
-                </span>
-                {(searchQuery || genderFilter !== 'all' || ageGroupFilter !== 'all' || educationFilter !== 'all' || occupationFilter !== 'all' || referralFilter !== 'all' || severityFilter !== 'all') && (
-                  <button
-                    onClick={handleResetFilters}
-                    className="text-[10px] font-extrabold text-rose-500 hover:text-rose-600 flex items-center gap-1 cursor-pointer bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded-lg border border-rose-100 dark:border-rose-900/30"
-                  >
-                    <RefreshCw className="w-2.5 h-2.5" />
-                    <span>Reset</span>
-                  </button>
-                )}
-              </div>
-
-              {/* Filter Form Controls in Side Drawer */}
-              <AnimatePresence initial={false}>
-                {showFilters && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="space-y-2.5 overflow-hidden pt-1"
-                  >
-                    {/* Search Input */}
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Cari Nama</label>
-                      <div className="relative">
-                        <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
-                        <input
-                          type="text"
-                          placeholder="Nama responden..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="w-full text-xs font-semibold pl-9 pr-3 py-1.5 bg-white/60 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-indigo-500"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Gender */}
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Jenis Kelamin</label>
-                      <select
-                        value={genderFilter}
-                        onChange={(e) => setGenderFilter(e.target.value)}
-                        className="w-full text-xs font-semibold px-2.5 py-1.5 bg-white/60 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-indigo-500"
-                      >
-                        <option value="all">Semua Jenis Kelamin</option>
-                        <option value="Laki-laki">Laki-laki</option>
-                        <option value="Perempuan">Perempuan</option>
-                      </select>
-                    </div>
-
-                    {/* Age Group */}
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Kelompok Umur</label>
-                      <select
-                        value={ageGroupFilter}
-                        onChange={(e) => setAgeGroupFilter(e.target.value)}
-                        className="w-full text-xs font-semibold px-2.5 py-1.5 bg-white/60 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-indigo-500"
-                      >
-                        <option value="all">Semua Kelompok Umur</option>
-                        <option value="5-10">5 - 10 Th (Anak-anak)</option>
-                        <option value="10-18">10 - 18 Th (Remaja)</option>
-                        <option value="18-60">18 - 60 Th (Produktif)</option>
-                        <option value="60+">60+ Th (Lansia)</option>
-                      </select>
-                    </div>
-
-                    {/* Status Rujukan */}
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Status Rujukan</label>
-                      <select
-                        value={referralFilter}
-                        onChange={(e) => setReferralFilter(e.target.value)}
-                        className="w-full text-xs font-semibold px-2.5 py-1.5 bg-white/60 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-indigo-500"
-                      >
-                        <option value="all">Semua Status Rujukan</option>
-                        <option value="rujuk">Memerlukan Rujukan</option>
-                        <option value="tidak_rujuk">Tidak Memerlukan</option>
-                      </select>
-                    </div>
-
-                    {/* Pendidikan */}
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Pendidikan</label>
-                      <select
-                        value={educationFilter}
-                        onChange={(e) => setEducationFilter(e.target.value)}
-                        className="w-full text-xs font-semibold px-2.5 py-1.5 bg-white/60 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-indigo-500"
-                      >
-                        <option value="all">Semua Pendidikan</option>
-                        <option value="Tidak Sekolah">Tidak Sekolah</option>
-                        <option value="SD">SD</option>
-                        <option value="SMP">SMP</option>
-                        <option value="SMA">SMA</option>
-                        <option value="Diploma">Diploma</option>
-                        <option value="S1/D4">S1 / D4</option>
-                        <option value="S2">S2</option>
-                        <option value="S3">S3</option>
-                      </select>
-                    </div>
-
-                    {/* Pekerjaan */}
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Pekerjaan</label>
-                      <select
-                        value={occupationFilter}
-                        onChange={(e) => setOccupationFilter(e.target.value)}
-                        className="w-full text-xs font-semibold px-2.5 py-1.5 bg-white/60 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-indigo-500"
-                      >
-                        <option value="all">Semua Pekerjaan</option>
-                        <option value="ASN/PNS/PPPK">ASN / PNS / PPPK</option>
-                        <option value="TNI/POLRI">TNI / POLRI</option>
-                        <option value="PEGAWAI BUMN">Pegawai BUMN</option>
-                        <option value="PEGAWAI SWASTA">Pegawai Swasta</option>
-                        <option value="WIRASWASTA/WIRAUSAHA">Wiraswasta / Usaha</option>
-                        <option value="PELAJAR/MAHASISWA">Pelajar / Mahasiswa</option>
-                        <option value="PENGURUS/IBU RUMAH TANGGA">Ibu Rumah Tangga</option>
-                        <option value="ASISTEN RUMAH TANGGA">Asisten Rumah Tangga</option>
-                        <option value="TIDAK BEKERJA">Tidak Bekerja</option>
-                      </select>
-                    </div>
-
-                    {/* Keparahan Gigi */}
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Kondisi Keparahan</label>
-                      <select
-                        value={severityFilter}
-                        onChange={(e) => setSeverityFilter(e.target.value)}
-                        className="w-full text-xs font-semibold px-2.5 py-1.5 bg-white/60 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-indigo-500"
-                      >
-                        <option value="all">Semua Kondisi</option>
-                        <option value="karies_aktif">Karies Aktif (d &gt; 0 / D &gt; 0)</option>
-                        <option value="sehat">Gigi Sempurna Sehat</option>
-                      </select>
-                    </div>
-
-                    {/* Indicator Capsule */}
-                    <div className="bg-indigo-600 text-white p-2.5 rounded-2xl text-center shadow-md shadow-indigo-600/10 border border-indigo-700 mt-2">
-                      <span className="text-[11px] font-bold block">
-                        {filteredRespondents.length === respondents.length 
-                          ? `Semua (${filteredRespondents.length} org) Terpilih` 
-                          : `Tersaring ${filteredRespondents.length} dari ${respondents.length} org`}
-                      </span>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
+            <button
+              onClick={() => setActiveSubTab('descriptive')}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
+                activeSubTab === 'descriptive'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+              id="subtab-descriptive"
+            >
+              <BarChart3 className="w-3.5 h-3.5" />
+              <span>Deskriptif & Cetak</span>
+            </button>
           </div>
 
-        </aside>
+          {/* Filter Toggle & Reset Buttons */}
+          <div className="flex items-center justify-end gap-2 shrink-0">
+            {(searchQuery || genderFilter !== 'all' || ageGroupFilter !== 'all' || educationFilter !== 'all' || occupationFilter !== 'all' || referralFilter !== 'all' || severityFilter !== 'all') && (
+              <button
+                onClick={handleResetFilters}
+                className="text-xs font-extrabold text-rose-500 hover:text-rose-600 flex items-center gap-1.5 cursor-pointer bg-rose-50 dark:bg-rose-950/40 px-3 py-1.5 rounded-xl border border-rose-200 dark:border-rose-900/40 transition-all"
+              >
+                <RefreshCw className="w-3 h-3" />
+                <span>Reset Filter</span>
+              </button>
+            )}
 
-        {/* --- RIGHT MAIN WORKSPACE CONTENT --- */}
-        <div className="flex-1 min-w-0 w-full space-y-6">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer border ${
+                showFilters
+                  ? 'bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200'
+              }`}
+              title={showFilters ? 'Sembunyikan Filter' : 'Tampilkan Filter Data'}
+            >
+              <Filter className="w-3.5 h-3.5 text-indigo-600" />
+              <span>Filter Data</span>
+            </button>
+          </div>
+
+        </div>
+
+        {/* Collapsible Filter Bar Grid */}
+        <AnimatePresence initial={false}>
+          {showFilters && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="space-y-4 pt-3.5 border-t border-slate-200/80 dark:border-slate-800 overflow-hidden"
+            >
+              {/* Filter Grid - Clean 2-Row Responsive Layout */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
+                
+                {/* Search Input - Spans 2 columns on larger screens for better UX */}
+                <div className="space-y-1 sm:col-span-2 lg:col-span-1 xl:col-span-1">
+                  <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Cari Nama Responden</label>
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                    <input
+                      type="text"
+                      placeholder="Ketik nama responden..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full text-xs font-semibold pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-800 transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Gender */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Jenis Kelamin</label>
+                  <select
+                    value={genderFilter}
+                    onChange={(e) => setGenderFilter(e.target.value)}
+                    className="w-full text-xs font-semibold px-3 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer"
+                  >
+                    <option value="all">Semua Jenis Kelamin</option>
+                    <option value="Laki-laki">Laki-laki</option>
+                    <option value="Perempuan">Perempuan</option>
+                  </select>
+                </div>
+
+                {/* Age Group */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Kelompok Umur</label>
+                  <select
+                    value={ageGroupFilter}
+                    onChange={(e) => setAgeGroupFilter(e.target.value)}
+                    className="w-full text-xs font-semibold px-3 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer"
+                  >
+                    <option value="all">Semua Kelompok Umur</option>
+                    <option value="5-10">5 - 10 Th (Anak-anak)</option>
+                    <option value="10-18">10 - 18 Th (Remaja)</option>
+                    <option value="18-60">18 - 60 Th (Produktif)</option>
+                    <option value="60+">60+ Th (Lansia)</option>
+                  </select>
+                </div>
+
+                {/* Status Rujukan */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Status Rujukan</label>
+                  <select
+                    value={referralFilter}
+                    onChange={(e) => setReferralFilter(e.target.value)}
+                    className="w-full text-xs font-semibold px-3 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer"
+                  >
+                    <option value="all">Semua Status Rujukan</option>
+                    <option value="rujuk">Memerlukan Rujukan</option>
+                    <option value="tidak_rujuk">Tidak Memerlukan</option>
+                  </select>
+                </div>
+
+                {/* Pendidikan */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Tingkat Pendidikan</label>
+                  <select
+                    value={educationFilter}
+                    onChange={(e) => setEducationFilter(e.target.value)}
+                    className="w-full text-xs font-semibold px-3 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer"
+                  >
+                    <option value="all">Semua Pendidikan</option>
+                    <option value="Tidak Sekolah">Tidak Sekolah</option>
+                    <option value="SD">SD</option>
+                    <option value="SMP">SMP</option>
+                    <option value="SMA">SMA</option>
+                    <option value="Diploma">Diploma</option>
+                    <option value="S1/D4">S1 / D4</option>
+                    <option value="S2">S2</option>
+                    <option value="S3">S3</option>
+                  </select>
+                </div>
+
+                {/* Pekerjaan */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Kategori Pekerjaan</label>
+                  <select
+                    value={occupationFilter}
+                    onChange={(e) => setOccupationFilter(e.target.value)}
+                    className="w-full text-xs font-semibold px-3 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer"
+                  >
+                    <option value="all">Semua Pekerjaan</option>
+                    <option value="ASN/PNS/PPPK">ASN / PNS / PPPK</option>
+                    <option value="TNI/POLRI">TNI / POLRI</option>
+                    <option value="PEGAWAI BUMN">Pegawai BUMN</option>
+                    <option value="PEGAWAI SWASTA">Pegawai Swasta</option>
+                    <option value="WIRASWASTA/WIRAUSAHA">Wiraswasta / Usaha</option>
+                    <option value="PELAJAR/MAHASISWA">Pelajar / Mahasiswa</option>
+                    <option value="PENGURUS/IBU RUMAH TANGGA">Ibu Rumah Tangga</option>
+                    <option value="ASISTEN RUMAH TANGGA">Asisten Rumah Tangga</option>
+                    <option value="TIDAK BEKERJA">Tidak Bekerja</option>
+                  </select>
+                </div>
+
+                {/* Keparahan Gigi */}
+                <div className="space-y-1 sm:col-span-2 lg:col-span-1 xl:col-span-2">
+                  <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Kondisi Keparahan Gigi</label>
+                  <select
+                    value={severityFilter}
+                    onChange={(e) => setSeverityFilter(e.target.value)}
+                    className="w-full text-xs font-semibold px-3 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer"
+                  >
+                    <option value="all">Semua Kondisi Keparahan</option>
+                    <option value="karies_aktif">Karies Aktif (d &gt; 0 atau D &gt; 0)</option>
+                    <option value="sehat">Gigi Sempurna Sehat (DMF-T &amp; def-t = 0)</option>
+                  </select>
+                </div>
+
+              </div>
+
+              {/* Status Bar Indicator */}
+              <div className="flex items-center justify-between bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-300 px-4 py-2 rounded-xl border border-indigo-100 dark:border-indigo-900/40 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
+                  <span className="font-bold">
+                    {filteredRespondents.length === respondents.length 
+                      ? `Menampilkan seluruh ${filteredRespondents.length} data responden` 
+                      : `Tersaring ${filteredRespondents.length} dari ${respondents.length} total responden`}
+                  </span>
+                </div>
+                {(searchQuery || genderFilter !== 'all' || ageGroupFilter !== 'all' || educationFilter !== 'all' || occupationFilter !== 'all' || referralFilter !== 'all' || severityFilter !== 'all') && (
+                  <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-md border border-indigo-200 dark:border-indigo-800">
+                    Filter Aktif
+                  </span>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* --- MAIN WORKSPACE CONTENT --- */}
+      <div className="space-y-6 w-full">
 
           {/* KPI STATS METRIC GRID */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4" id="filtered-kpi-grid">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-5" id="filtered-kpi-grid">
         
         {/* KPI 1: Active Respondents */}
         <motion.div 
           whileHover={{ translateY: -3 }}
-          className="glass-panel p-5 rounded-3xl shadow-md border border-white/40 flex flex-col justify-between"
+          className="glass-panel p-5 rounded-3xl shadow-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col justify-between"
         >
           <div className="flex justify-between items-start">
             <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Responden Tersaring</span>
@@ -603,7 +596,7 @@ export default function Dashboard({ respondents }: DashboardProps) {
         {/* KPI 2: def-t Average */}
         <motion.div 
           whileHover={{ translateY: -3 }}
-          className="glass-panel p-5 rounded-3xl shadow-md border border-white/40 flex flex-col justify-between"
+          className="glass-panel p-5 rounded-3xl shadow-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col justify-between"
         >
           <div className="flex justify-between items-start">
             <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Rata-Rata def-t (Sulung)</span>
@@ -626,7 +619,7 @@ export default function Dashboard({ respondents }: DashboardProps) {
         {/* KPI 3: DMF-T Average */}
         <motion.div 
           whileHover={{ translateY: -3 }}
-          className="glass-panel p-5 rounded-3xl shadow-md border border-white/40 flex flex-col justify-between"
+          className="glass-panel p-5 rounded-3xl shadow-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col justify-between"
         >
           <div className="flex justify-between items-start">
             <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Rata-Rata DMF-T (Tetap)</span>
@@ -649,7 +642,7 @@ export default function Dashboard({ respondents }: DashboardProps) {
         {/* KPI 4: Referral Rate */}
         <motion.div 
           whileHover={{ translateY: -3 }}
-          className="glass-panel p-5 rounded-3xl shadow-md border border-white/40 flex flex-col justify-between"
+          className="glass-panel p-5 rounded-3xl shadow-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col justify-between"
         >
           <div className="flex justify-between items-start">
             <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tingkat Rujukan</span>
@@ -696,8 +689,8 @@ export default function Dashboard({ respondents }: DashboardProps) {
               className="grid grid-cols-1 lg:grid-cols-2 gap-6"
             >
               {/* Chart A: Grouped Bar Chart */}
-              <div className="glass-panel rounded-3xl p-6 border border-white/40 shadow-md space-y-4 relative">
-                <div className="flex flex-wrap sm:flex-nowrap justify-between items-start sm:items-center gap-3 border-b border-white/30 pb-3">
+              <div className="glass-panel bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-md space-y-4 relative">
+                <div className="flex flex-wrap sm:flex-nowrap justify-between items-start sm:items-center gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
                   <div className="space-y-0.5 min-w-0 flex-1">
                     <h3 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest flex items-center gap-1.5 flex-wrap">
                       <span className="w-2 h-2 rounded-full bg-indigo-600 shrink-0" />
@@ -803,18 +796,18 @@ export default function Dashboard({ respondents }: DashboardProps) {
                 <div className="flex justify-center gap-6 text-[10px] font-bold pt-2">
                   <div className="flex items-center gap-2">
                     <div className="w-3.5 h-3.5 bg-gradient-to-t from-emerald-600 to-emerald-400 rounded-xs shadow-md shadow-emerald-600/10" />
-                    <span className="text-slate-600">Rata-rata def-t (Gigi Sulung)</span>
+                    <span className="text-slate-600 dark:text-slate-300">Rata-rata def-t (Gigi Sulung)</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-3.5 h-3.5 bg-gradient-to-t from-indigo-600 to-indigo-400 rounded-xs shadow-md shadow-indigo-600/10" />
-                    <span className="text-slate-600">Rata-rata DMF-T (Gigi Tetap)</span>
+                    <span className="text-slate-600 dark:text-slate-300">Rata-rata DMF-T (Gigi Tetap)</span>
                   </div>
                 </div>
               </div>
 
               {/* Chart B: Line Trend Chart */}
-              <div className="glass-panel rounded-3xl p-6 border border-white/40 shadow-md space-y-4 relative">
-                <div className="flex flex-wrap sm:flex-nowrap justify-between items-start sm:items-center gap-3 border-b border-white/30 pb-3">
+              <div className="glass-panel bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-md space-y-4 relative">
+                <div className="flex flex-wrap sm:flex-nowrap justify-between items-start sm:items-center gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
                   <div className="space-y-0.5 min-w-0 flex-1">
                     <h3 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest flex items-center gap-1.5 flex-wrap">
                       <span className="w-2 h-2 rounded-full bg-emerald-600 shrink-0" />
@@ -1027,11 +1020,11 @@ export default function Dashboard({ respondents }: DashboardProps) {
                 <div className="flex justify-center gap-6 text-[10px] font-bold pt-2">
                   <div className="flex items-center gap-2">
                     <div className="w-3.5 h-1.5 bg-emerald-500 rounded-full" />
-                    <span className="text-slate-600">def-t (Gigi Sulung)</span>
+                    <span className="text-slate-600 dark:text-slate-300">def-t (Gigi Sulung)</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-3.5 h-1.5 bg-indigo-600 rounded-full" />
-                    <span className="text-slate-600">DMF-T (Gigi Tetap)</span>
+                    <span className="text-slate-600 dark:text-slate-300">DMF-T (Gigi Tetap)</span>
                   </div>
                 </div>
               </div>
@@ -1048,14 +1041,14 @@ export default function Dashboard({ respondents }: DashboardProps) {
               className="space-y-6"
             >
               {/* Toggle for Heatmap View Mode */}
-              <div className="flex justify-center bg-white/40 p-1.5 border border-white/65 rounded-2xl w-fit mx-auto gap-1">
+              <div className="flex justify-center bg-white/80 dark:bg-slate-800/80 p-1.5 border border-slate-200 dark:border-slate-700 rounded-2xl w-fit mx-auto gap-1">
                 <button
                   type="button"
                   onClick={() => setHeatmapViewMode('geografis')}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-150 cursor-pointer ${
                     heatmapViewMode === 'geografis' 
                       ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/10' 
-                      : 'text-slate-600 hover:bg-white/50'
+                      : 'text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-700/50'
                   }`}
                 >
                   <MapPin className="w-4 h-4" /> Peta Panas Geografis (Peta Wilayah)
@@ -1066,7 +1059,7 @@ export default function Dashboard({ respondents }: DashboardProps) {
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-150 cursor-pointer ${
                     heatmapViewMode === 'odontogram' 
                       ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/10' 
-                      : 'text-slate-600 hover:bg-white/50'
+                      : 'text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-700/50'
                   }`}
                 >
                   <span>🦷</span> Heatmap Odontogram (Kondisi Gigi)
@@ -1635,12 +1628,12 @@ export default function Dashboard({ respondents }: DashboardProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Gigi Sulung & Tetap comparative table */}
-        <div className="glass-panel rounded-3xl p-6 border border-white/40 shadow-md space-y-4 lg:col-span-2" id="teeth-state-table-container">
-          <div className="border-b border-white/30 pb-3 flex items-center justify-between">
-            <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">
-              III. Rata-Rata Temuan Klinis Gigi & Mulut
+        <div className="glass-panel bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-md space-y-4 lg:col-span-2" id="teeth-state-table-container">
+          <div className="border-b border-slate-200 dark:border-slate-800 pb-3 flex items-center justify-between">
+            <h3 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest">
+              I. RATA-RATA TEMUAN KLINIS GIGI & MULUT
             </h3>
-            <span className="text-[9px] bg-white/70 text-indigo-700 border border-indigo-100/30 font-mono px-2 py-0.5 rounded-full uppercase tracking-wider font-extrabold shadow-2xs">
+            <span className="text-[9px] bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-mono px-2 py-0.5 rounded-full uppercase tracking-wider font-extrabold shadow-2xs">
               Tabel Komparasi
             </span>
           </div>
@@ -1706,15 +1699,15 @@ export default function Dashboard({ respondents }: DashboardProps) {
         </div>
 
         {/* Interpretasi Klinis Box */}
-        <div className="glass-panel rounded-3xl p-6 border border-white/40 shadow-md space-y-4 flex flex-col justify-between" id="clinical-interpretation-card">
+        <div className="glass-panel bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-md space-y-4 flex flex-col justify-between" id="clinical-interpretation-card">
           <div className="space-y-4">
-            <h3 className="text-xs font-black text-slate-900 border-b border-white/30 pb-3 uppercase tracking-widest">
-              IV. Keparahan Epidemiologis (WHO)
+            <h3 className="text-xs font-black text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-800 pb-3 uppercase tracking-widest">
+              II. INTERPRETASI EPIDEMIOLOGIS
             </h3>
             
             {/* DMF-T Level */}
             <div className="space-y-2">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Kondisi Karies Gigi Tetap (DMF-T)</span>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">KEPARAHAN KARIES GIGI TETAP (DMF-T)</span>
               <div className={`p-3 rounded-2xl border font-bold text-xs flex justify-between items-center shadow-xs backdrop-blur-md ${dmftSeverity.color}`}>
                 <span>DMF-T: {stats.indexAvg.dmft.toFixed(2)}</span>
                 <span className="uppercase text-[9px] font-black tracking-widest px-2.5 py-1 rounded-full bg-white/80 text-slate-900 border border-white/40 shadow-xs">{dmftSeverity.label}</span>
@@ -1724,7 +1717,7 @@ export default function Dashboard({ respondents }: DashboardProps) {
 
             {/* def-t Level */}
             <div className="space-y-2 pt-4 border-t border-slate-200/50">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Kondisi Karies Gigi Sulung (def-t)</span>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">KEPARAHAN KARIES GIGI SULUNG (DEF-T)</span>
               <div className={`p-3 rounded-2xl border font-bold text-xs flex justify-between items-center shadow-xs backdrop-blur-md ${deftSeverity.color}`}>
                 <span>def-t: {stats.indexAvg.deft.toFixed(2)}</span>
                 <span className="uppercase text-[9px] font-black tracking-widest px-2.5 py-1 rounded-full bg-white/80 text-slate-900 border border-white/40 shadow-xs">{deftSeverity.label}</span>
@@ -1752,6 +1745,5 @@ export default function Dashboard({ respondents }: DashboardProps) {
       </div>
 
     </div>
-  </div>
   );
 }

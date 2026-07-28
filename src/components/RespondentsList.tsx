@@ -3,6 +3,7 @@ import { Search, Trash2, Eye, ShieldAlert, CheckCircle2, User, ChevronLeft, Chev
 import { RespondentData, UserRole } from '../types';
 import Odontogram from './Odontogram';
 import { exportToPdf, exportToExcel } from '../lib/surveyEngine';
+import ConfirmModal from './ConfirmModal';
 
 interface RespondentsListProps {
   respondents: RespondentData[];
@@ -24,6 +25,8 @@ export default function RespondentsList({
   
   const [selectedRespondent, setSelectedRespondent] = useState<RespondentData | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const itemsPerPage = 10;
 
   // Handle Filtering
@@ -45,14 +48,17 @@ export default function RespondentsList({
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedItems = filtered.slice(startIndex, startIndex + itemsPerPage);
 
-  const handleDelete = async (id: string, name: string) => {
-    if (confirm(`Apakah Anda yakin ingin menghapus data responden "${name}"? Tindakan ini akan menghapusnya dari cloud secara permanen.`)) {
-      try {
-        await onDeleteRespondent(id);
-      } catch (err) {
-        console.error("Gagal menghapus:", err);
-        alert("Gagal menghapus responden dari Cloud Firestore.");
-      }
+  const confirmDeleteAction = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    try {
+      await onDeleteRespondent(deleteTarget.id);
+      setDeleteTarget(null);
+    } catch (err) {
+      console.error("Gagal menghapus:", err);
+      alert("Gagal menghapus responden dari Cloud Firestore.");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -173,17 +179,17 @@ export default function RespondentsList({
       {/* Main Table */}
       <div className="glass-panel rounded-3xl shadow-lg border border-white/30 overflow-hidden" id="respondents-table-wrapper">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+          <table className="w-full text-left text-xs border-collapse min-w-[800px]">
             <thead>
               <tr className="bg-white/30 text-slate-600 border-b border-white/30 font-bold uppercase tracking-wider">
-                <th className="py-4 px-4 text-[10px]">Nama Responden</th>
-                <th className="py-4 px-3 text-[10px]">Umur</th>
-                <th className="py-4 px-3 text-[10px]">Gender</th>
-                <th className="py-4 px-3 text-[10px] text-center">Indeks def-t</th>
-                <th className="py-4 px-3 text-[10px] text-center">Indeks DMF-T</th>
-                <th className="py-4 px-3 text-[10px]">Mukosa</th>
-                <th className="py-4 px-3 text-[10px]">Tindak Lanjut</th>
-                <th className="py-4 px-4 text-[10px] text-center">Aksi</th>
+                <th className="py-4 px-4 text-[10px] whitespace-nowrap">Nama Responden</th>
+                <th className="py-4 px-3 text-[10px] whitespace-nowrap">Umur</th>
+                <th className="py-4 px-3 text-[10px] whitespace-nowrap">Gender</th>
+                <th className="py-4 px-3 text-[10px] text-center whitespace-nowrap">Indeks def-t</th>
+                <th className="py-4 px-3 text-[10px] text-center whitespace-nowrap">Indeks DMF-T</th>
+                <th className="py-4 px-3 text-[10px] whitespace-nowrap">Mukosa</th>
+                <th className="py-4 px-3 text-[10px] whitespace-nowrap">Tindak Lanjut</th>
+                <th className="py-4 px-4 text-[10px] text-center whitespace-nowrap">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/20 text-slate-700">
@@ -262,7 +268,7 @@ export default function RespondentsList({
                         {/* Delete Button (RBAC: Administrator, Super Admin, and Admin Klinik) */}
                         {(userRole === 'administrator' || userRole === 'super_admin' || userRole === 'admin_klinik') && (
                           <button
-                            onClick={() => handleDelete(r.id!, r.nama)}
+                            onClick={() => setDeleteTarget({ id: r.id!, name: r.nama })}
                             className="p-1.5 bg-white/50 hover:bg-rose-600 text-rose-600 hover:text-white border border-white/50 rounded-xl transition-all hover:scale-105 cursor-pointer"
                             title="Hapus Responden"
                             id={`btn-delete-${r.id}`}
@@ -474,6 +480,23 @@ export default function RespondentsList({
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal with Yes/No choice */}
+      <ConfirmModal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDeleteAction}
+        isLoading={isDeleting}
+        title="Konfirmasi Hapus Data Responden"
+        message={
+          <>
+            Apakah Anda yakin ingin menghapus data responden <strong className="text-slate-900 dark:text-white font-extrabold">"{deleteTarget?.name}"</strong>? Data akan dihapus secara permanen dari Cloud Firestore.
+          </>
+        }
+        confirmText="Iya, Hapus"
+        cancelText="Tidak, Batal"
+        variant="danger"
+      />
     </div>
   );
 }

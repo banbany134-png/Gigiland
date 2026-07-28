@@ -30,8 +30,8 @@ import {
   PanelLeftOpen,
   Layers,
   Check,
-  Laptop,
-  Smartphone
+  Smartphone,
+  Scale
 } from 'lucide-react';
 import { collection, doc, addDoc, onSnapshot, query, deleteDoc, getDocs, writeBatch, setDoc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
@@ -42,6 +42,7 @@ import { exportToExcel, exportToPdf, generateMockRespondents } from './lib/surve
 // Subcomponents
 import Dashboard from './components/Dashboard';
 import DescriptiveAnalysis from './components/DescriptiveAnalysis';
+import BivariateAnalysis from './components/BivariateAnalysis';
 import DentalForm from './components/DentalForm';
 import RespondentsList from './components/RespondentsList';
 import SessionManager from './components/SessionManager';
@@ -49,7 +50,7 @@ import Login from './components/Login';
 import UserManagement from './components/UserManagement';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'stats' | 'input' | 'data' | 'cloud' | 'users'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'stats' | 'bivariate' | 'input' | 'data' | 'cloud' | 'users'>('dashboard');
   
   // Navigation layout states
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -62,9 +63,11 @@ export default function App() {
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
+      document.body.classList.add('dark');
       localStorage.setItem('theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark');
       localStorage.setItem('theme', 'light');
     }
   }, [darkMode]);
@@ -498,36 +501,6 @@ export default function App() {
                 </div>
               )}
 
-              {/* Mode Tampilan Toggle (Laptop vs HP) */}
-              <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xs">
-                <button
-                  onClick={() => setViewMode('laptop')}
-                  className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
-                    viewMode === 'laptop'
-                      ? 'bg-indigo-600 text-white shadow-xs'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                  title="Mode Laptop (Desktop View)"
-                  id="btn-mode-laptop"
-                >
-                  <Laptop className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Laptop</span>
-                </button>
-                <button
-                  onClick={() => setViewMode('mobile')}
-                  className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
-                    viewMode === 'mobile'
-                      ? 'bg-indigo-600 text-white shadow-xs'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                  title="Mode HP (Simulasi Frame HP)"
-                  id="btn-mode-hp"
-                >
-                  <Smartphone className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Mode HP</span>
-                </button>
-              </div>
-
               {/* Dark Mode Switch */}
               <button
                 onClick={() => setDarkMode(!darkMode)}
@@ -659,6 +632,22 @@ export default function App() {
                     <div className="flex items-center gap-3">
                       <BarChart3 className="w-4.5 h-4.5 text-amber-500 shrink-0" />
                       <span>Statistik Deskriptif</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 opacity-40" />
+                  </button>
+
+                  {/* Analisis Bivariat */}
+                  <button
+                    onClick={() => { setActiveTab('bivariate'); setMobileMenuOpen(false); }}
+                    className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl font-black text-xs transition-all cursor-pointer ${
+                      activeTab === 'bivariate'
+                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Scale className="w-4.5 h-4.5 text-purple-400 shrink-0" />
+                      <span>Analisis Bivariat & Kuantitatif</span>
                     </div>
                     <ChevronRight className="w-4 h-4 opacity-40" />
                   </button>
@@ -969,29 +958,17 @@ export default function App() {
             >
               <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 rounded-3xl p-3.5 shadow-md space-y-5">
                 
-                {/* Sidebar Header & Collapse Toggle */}
-                <div className="flex items-center justify-between pb-3 border-b border-slate-200/70 dark:border-slate-800">
-                  {!isSidebarCollapsed && (
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center">
-                        <LayoutDashboard className="w-4 h-4" />
-                      </div>
-                      <span className="text-xs font-black uppercase text-slate-800 dark:text-slate-200 tracking-wider font-display">
-                        Navigasi Utama
-                      </span>
+                {/* Sidebar Header */}
+                {!isSidebarCollapsed && (
+                  <div className="flex items-center gap-2 pb-3 border-b border-slate-200/70 dark:border-slate-800">
+                    <div className="w-7 h-7 bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center">
+                      <LayoutDashboard className="w-4 h-4" />
                     </div>
-                  )}
-                  
-                  <button
-                    onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                    className={`p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer ${
-                      isSidebarCollapsed ? 'mx-auto' : ''
-                    }`}
-                    title={isSidebarCollapsed ? "Perluas Sidebar" : "Kecilkan Sidebar"}
-                  >
-                    {isSidebarCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
-                  </button>
-                </div>
+                    <span className="text-xs font-black uppercase text-slate-800 dark:text-slate-200 tracking-wider font-display">
+                      Navigasi Utama
+                    </span>
+                  </div>
+                )}
 
                 {/* Grouped Sidebar Navigation Menu */}
                 <nav className="space-y-5">
@@ -1045,6 +1022,28 @@ export default function App() {
                       </div>
                       {!isSidebarCollapsed && (
                         <ChevronRight className={`w-3.5 h-3.5 transition-transform ${activeTab === 'stats' ? 'translate-x-0.5' : 'opacity-30'}`} />
+                      )}
+                    </button>
+
+                    {/* Tab Analisis Bivariat & Kuantitatif */}
+                    <button
+                      onClick={() => setActiveTab('bivariate')}
+                      className={`w-full flex items-center rounded-2xl font-black text-xs transition-all cursor-pointer group relative ${
+                        isSidebarCollapsed ? 'justify-center p-3' : 'justify-between px-3.5 py-2.5'
+                      } ${
+                        activeTab === 'bivariate'
+                          ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                          : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
+                      }`}
+                      title="Analisis Bivariat & Kuantitatif"
+                      id="tab-sidebar-bivariate"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Scale className="w-4 h-4 shrink-0 text-purple-400" />
+                        {!isSidebarCollapsed && <span>Analisis Bivariat</span>}
+                      </div>
+                      {!isSidebarCollapsed && (
+                        <ChevronRight className={`w-3.5 h-3.5 transition-transform ${activeTab === 'bivariate' ? 'translate-x-0.5' : 'opacity-30'}`} />
                       )}
                     </button>
                   </div>
@@ -1290,6 +1289,10 @@ export default function App() {
 
                   {activeTab === 'stats' && (
                     <DescriptiveAnalysis respondents={respondents} allRespondentsCount={respondents.length} />
+                  )}
+
+                  {activeTab === 'bivariate' && (
+                    <BivariateAnalysis respondents={respondents} />
                   )}
 
                   {activeTab === 'input' && (
